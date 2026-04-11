@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>respiro</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --serif: Georgia, 'Times New Roman', serif;
+  --sans: system-ui, sans-serif;
+  --areia: #f5f0e8;
+  --areia2: #ede7d8;
+  --text-dark: #1a1a18;
+  --text-mid: #4a4a44;
+  --text-soft: #8a8a80;
+}
+html, body { height: 100%; font-family: var(--sans); background: #111; color: #eee; }
+
+/* NAV */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1.2rem 2rem;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.55), transparent);
+}
+.logo {
+  font-family: var(--serif); font-style: italic;
+  font-size: 1.5rem; letter-spacing: 0.05em; color: #fff; cursor: pointer;
+}
+.nav-links { display: flex; gap: 1.5rem; align-items: center; }
+.nav-links button {
+  background: none; border: none; color: rgba(255,255,255,0.75);
+  font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase;
+  cursor: pointer; transition: color 0.2s;
+}
+.nav-links button:hover { color: #fff; }
+
+/* VIEWS */
+.view { display: none !important; min-height: 100vh; }
+.view.active { display: block !important; }
+
+/* ===== HERO ===== */
+#view-hero {
+  position: relative; height: 100vh; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.hero-bg {
+  position: absolute; inset: 0; z-index: 0;
+  background-size: cover; background-position: center;
+  background-color: #1a1f18;
+  filter: blur(8px) brightness(0.45); transform: scale(1.05);
+  transition: background-image 0.8s ease;
+}
+.hero-veil { position: absolute; inset: 0; z-index: 1; background: rgba(0,0,0,0.38); }
+.hero-content {
+  position: relative; z-index: 2; text-align: center;
+  max-width: 680px; padding: 2rem 1.5rem; width: 100%;
+}
+.semana-label {
+  font-size: 0.7rem; letter-spacing: 0.22em; text-transform: uppercase;
+  color: rgba(255,255,255,0.5); margin-bottom: 1.5rem;
+}
+.hero-titulo {
+  font-family: var(--serif); font-style: italic;
+  font-size: clamp(1.8rem, 5vw, 3.5rem); font-weight: 400;
+  color: #fff; line-height: 1.2; margin-bottom: 1.5rem;
+}
+.hero-trecho {
+  font-size: clamp(0.9rem, 2vw, 1rem);
+  color: rgba(255,255,255,0.72); line-height: 1.85;
+  margin-bottom: 2.5rem; font-style: italic;
+}
+.btn-ler {
+  display: inline-block; padding: 0.75rem 2.5rem;
+  border: 1px solid rgba(255,255,255,0.45); color: #fff;
+  font-size: 0.75rem; letter-spacing: 0.18em; text-transform: uppercase;
+  background: transparent; cursor: pointer;
+  transition: background 0.25s, border-color 0.25s;
+}
+.btn-ler:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.8); }
+
+.semanas-nav {
+  position: fixed; right: 1.2rem; top: 50%; transform: translateY(-50%);
+  z-index: 50; display: flex; flex-direction: column; gap: 10px;
+}
+.dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: rgba(255,255,255,0.28); cursor: pointer; transition: all 0.2s;
+}
+.dot.active { background: #fff; transform: scale(1.4); }
+
+.btn-som {
+  position: fixed; bottom: 1.5rem; left: 1.5rem; z-index: 50;
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.22);
+  color: rgba(255,255,255,0.7); font-size: 0.68rem; letter-spacing: 0.1em;
+  text-transform: uppercase; padding: 0.5rem 1rem; cursor: pointer;
+  transition: all 0.2s; border-radius: 2px;
+}
+.btn-som:hover { background: rgba(255,255,255,0.18); color: #fff; }
+.btn-som.on { color: #fff; border-color: rgba(255,255,255,0.55); }
+
+.btn-mensagem {
+  position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 50;
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.22);
+  color: rgba(255,255,255,0.7); font-size: 0.68rem; letter-spacing: 0.1em;
+  text-transform: uppercase; padding: 0.5rem 1rem; cursor: pointer;
+  transition: all 0.2s; border-radius: 2px;
+}
+.btn-mensagem:hover { background: rgba(255,255,255,0.18); color: #fff; }
+
+@keyframes pulseGreen { 0%,100%{opacity:0.5} 50%{opacity:1} }
+.som-on-dot {
+  display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+  background: #7abf8a; margin-right: 5px;
+  animation: pulseGreen 1.5s ease infinite; vertical-align: middle;
+}
+
+/* ===== LEITURA ===== */
+#view-leitura { min-height: 100vh; position: relative; }
+.leitura-bg {
+  position: fixed; inset: 0; z-index: 0;
+  background-size: cover; background-position: center;
+  background-color: #111;
+  filter: blur(12px) brightness(0.32); transform: scale(1.08);
+}
+.leitura-veil { position: fixed; inset: 0; z-index: 1; background: rgba(0,0,0,0.55); }
+.leitura-corpo {
+  position: relative; z-index: 2;
+  max-width: 580px; margin: 0 auto;
+  padding: 7rem 1.5rem 5rem;
+}
+.leitura-semana {
+  font-size: 0.68rem; letter-spacing: 0.22em; text-transform: uppercase;
+  color: rgba(255,255,255,0.38); margin-bottom: 1rem;
+}
+.leitura-titulo {
+  font-family: var(--serif); font-style: italic; font-weight: 400;
+  font-size: clamp(1.6rem, 4vw, 2.8rem); color: #fff;
+  line-height: 1.25; margin-bottom: 2.5rem;
+}
+.leitura-texto {
+  font-size: 1.05rem; line-height: 2;
+  color: rgba(255,255,255,0.82); white-space: pre-wrap;
+}
+.leitura-separador {
+  width: 40px; height: 1px;
+  background: rgba(255,255,255,0.22); margin: 3rem 0;
+}
+.btn-voltar {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: none; border: none; color: rgba(255,255,255,0.45);
+  font-size: 0.72rem; letter-spacing: 0.15em; text-transform: uppercase;
+  cursor: pointer; transition: color 0.2s; margin-top: 3rem;
+}
+.btn-voltar:hover { color: #fff; }
+
+/* ===== ARQUIVO ===== */
+#view-arquivo { background: var(--areia); min-height: 100vh; }
+.arquivo-header { padding: 6rem 1.5rem 2.5rem; text-align: center; }
+.arquivo-logo {
+  font-family: var(--serif); font-style: italic;
+  font-size: 2rem; color: var(--text-dark); margin-bottom: 0.5rem;
+}
+.arquivo-sub {
+  font-size: 0.72rem; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--text-soft);
+}
+.arquivo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1px; background: #ccc8bb; border-top: 1px solid #ccc8bb;
+}
+.arquivo-card {
+  position: relative; overflow: hidden; cursor: pointer;
+  aspect-ratio: 3/4; background: var(--areia2);
+}
+.arquivo-card-bg {
+  position: absolute; inset: 0;
+  background-size: cover; background-position: center;
+  filter: brightness(0.6); transition: transform 0.4s ease, filter 0.3s;
+}
+.arquivo-card:hover .arquivo-card-bg { transform: scale(1.04); filter: brightness(0.48); }
+.arquivo-card-info {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 1.5rem 1rem 1rem;
+  background: linear-gradient(to top, rgba(0,0,0,0.72), transparent);
+  color: #fff;
+}
+.arquivo-semana-card {
+  font-size: 0.63rem; letter-spacing: 0.2em;
+  text-transform: uppercase; opacity: 0.6;
+}
+.arquivo-titulo-card {
+  font-family: var(--serif); font-style: italic;
+  font-size: 1.05rem; margin-top: 0.3rem;
+}
+
+/* ===== MENSAGEM ===== */
+#view-mensagem {
+  background: #0d0d0b; min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  padding: 2rem 1.5rem;
+}
+.mensagem-box { max-width: 520px; width: 100%; }
+.mensagem-titulo {
+  font-family: var(--serif); font-style: italic;
+  font-size: clamp(1.4rem, 4vw, 1.8rem);
+  color: rgba(255,255,255,0.9); margin-bottom: 0.5rem;
+}
+.mensagem-sub {
+  font-size: 0.78rem; color: rgba(255,255,255,0.32);
+  letter-spacing: 0.08em; margin-bottom: 2.5rem;
+}
+.mensagem-textarea {
+  width: 100%; background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.11);
+  color: rgba(255,255,255,0.85); padding: 1.2rem;
+  font-size: 1rem; font-family: var(--serif); font-style: italic;
+  line-height: 1.7; resize: none; height: 160px;
+  border-radius: 2px; outline: none; transition: border-color 0.2s;
+}
+.mensagem-textarea:focus { border-color: rgba(255,255,255,0.28); }
+.mensagem-textarea::placeholder { color: rgba(255,255,255,0.18); }
+.mensagem-count {
+  text-align: right; font-size: 0.7rem;
+  color: rgba(255,255,255,0.22); margin-top: 0.4rem;
+}
+.btn-enviar {
+  margin-top: 1.5rem; width: 100%; padding: 0.9rem;
+  background: transparent; border: 1px solid rgba(255,255,255,0.28);
+  color: rgba(255,255,255,0.65); font-size: 0.75rem;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  cursor: pointer; transition: all 0.25s;
+}
+.btn-enviar:hover { background: rgba(255,255,255,0.08); color: #fff; border-color: rgba(255,255,255,0.55); }
+.mensagem-ok { display: none; text-align: center; padding: 2rem 0; }
+.mensagem-ok-texto {
+  font-family: var(--serif); font-style: italic;
+  font-size: 1.1rem; color: rgba(255,255,255,0.65); line-height: 1.8;
+}
+
+/* ===== ADMIN (acessível só por #admin na URL) ===== */
+#view-admin { background: var(--areia); min-height: 100vh; }
+.admin-container { max-width: 680px; margin: 0 auto; padding: 5rem 1.5rem 4rem; }
+.admin-logo {
+  font-family: var(--serif); font-style: italic;
+  font-size: 1.5rem; color: var(--text-dark); margin-bottom: 0.2rem;
+}
+.admin-subtag {
+  font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--text-soft); margin-bottom: 2.5rem;
+}
+.admin-section { margin-bottom: 1.8rem; }
+.admin-label {
+  display: block; font-size: 0.68rem; letter-spacing: 0.15em;
+  text-transform: uppercase; color: var(--text-soft); margin-bottom: 0.5rem;
+}
+.admin-input, .admin-textarea {
+  width: 100%; background: #fff; border: 1px solid #ddd8cc;
+  color: var(--text-dark); padding: 0.75rem 1rem;
+  font-size: 0.95rem; font-family: var(--serif);
+  border-radius: 2px; outline: none; transition: border-color 0.2s;
+}
+.admin-input:focus, .admin-textarea:focus { border-color: #a8a090; }
+.admin-textarea { resize: vertical; min-height: 180px; line-height: 1.7; }
+.admin-file-label {
+  display: flex; align-items: center; gap: 10px;
+  border: 1px dashed #c8c0b0; padding: 0.9rem 1.2rem; cursor: pointer;
+  color: var(--text-soft); font-size: 0.8rem; border-radius: 2px;
+  transition: border-color 0.2s; background: #fff;
+}
+.admin-file-label:hover { border-color: #a0988a; color: var(--text-mid); }
+.admin-file-label input { display: none; }
+.admin-preview {
+  margin-top: 0.8rem; max-height: 150px; object-fit: cover;
+  width: 100%; border-radius: 2px; display: none;
+}
+.btn-publicar {
+  width: 100%; padding: 0.9rem; background: var(--text-dark); color: #fff;
+  border: none; font-size: 0.75rem; letter-spacing: 0.18em;
+  text-transform: uppercase; cursor: pointer; border-radius: 2px; transition: opacity 0.2s;
+}
+.btn-publicar:hover { opacity: 0.82; }
+.admin-sep { border: none; border-top: 1px solid #ddd8cc; margin: 2rem 0; }
+.admin-msg-titulo {
+  font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--text-soft); margin-bottom: 1rem;
+}
+.msg-card {
+  background: #fff; border: 1px solid #e8e2d8; border-radius: 2px;
+  padding: 1rem 1.2rem; margin-bottom: 0.75rem; position: relative;
+}
+.msg-card.nova { border-left: 3px solid #8a7a60; }
+.msg-texto {
+  font-family: var(--serif); font-style: italic;
+  font-size: 0.93rem; color: var(--text-dark); line-height: 1.7; margin-bottom: 0.4rem;
+}
+.msg-data { font-size: 0.68rem; color: var(--text-soft); }
+.btn-del-msg {
+  position: absolute; top: 0.75rem; right: 0.75rem;
+  background: none; border: none; color: #ccc; cursor: pointer;
+  font-size: 1rem; transition: color 0.2s;
+}
+.btn-del-msg:hover { color: #999; }
+.sem-msgs { font-size: 0.85rem; color: var(--text-soft); font-style: italic; }
+.status-ok { color: #4a7a5a; font-size: 0.8rem; margin-top: 0.8rem; }
+.status-err { color: #a05040; font-size: 0.8rem; margin-top: 0.8rem; }
+
+/* ===== LOGIN ===== */
+#view-login {
+  background: var(--areia); min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  padding: 2rem;
+}
+.login-box { max-width: 320px; width: 100%; text-align: center; }
+.login-logo {
+  font-family: var(--serif); font-style: italic;
+  font-size: 2rem; color: var(--text-dark); margin-bottom: 0.3rem;
+}
+.login-sub {
+  font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--text-soft); margin-bottom: 2rem;
+}
+.login-input {
+  width: 100%; background: #fff; border: 1px solid #ddd8cc;
+  color: var(--text-dark); padding: 0.8rem 1rem; font-size: 0.95rem;
+  border-radius: 2px; outline: none; text-align: center;
+  letter-spacing: 0.2em; margin-bottom: 1rem; transition: border-color 0.2s;
+}
+.login-input:focus { border-color: #a8a090; }
+.btn-login {
+  width: 100%; padding: 0.8rem; background: var(--text-dark); color: #fff;
+  border: none; font-size: 0.72rem; letter-spacing: 0.18em;
+  text-transform: uppercase; cursor: pointer; border-radius: 2px; transition: opacity 0.2s;
+}
+.btn-login:hover { opacity: 0.82; }
+.login-erro { font-size: 0.75rem; color: #a05040; margin-top: 0.6rem; display: none; }
+
+/* MOBILE */
+@media (max-width: 600px) {
+  nav { padding: 1rem 1.2rem; }
+  .nav-links { gap: 1rem; }
+  .nav-links button { font-size: 0.7rem; }
+  .btn-som { font-size: 0.62rem; padding: 0.4rem 0.7rem; bottom: 1rem; left: 1rem; }
+  .btn-mensagem { font-size: 0.62rem; padding: 0.4rem 0.7rem; bottom: 1rem; right: 1rem; }
+  .semanas-nav { right: 0.6rem; }
+  .leitura-texto { font-size: 0.97rem; }
+  .arquivo-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV (sem link admin visível) -->
+<nav id="main-nav">
+  <div class="logo" onclick="goView('hero')">respiro</div>
+  <div class="nav-links">
+    <button onclick="goView('arquivo')">arquivo</button>
+    <button onclick="goView('mensagem')">escrever</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="view active" id="view-hero">
+  <div class="hero-bg" id="hero-bg"></div>
+  <div class="hero-veil"></div>
+  <div class="hero-content">
+    <p class="semana-label" id="hero-semana">semana 01 · 2025</p>
+    <h1 class="hero-titulo" id="hero-titulo">respiro</h1>
+    <p class="hero-trecho" id="hero-trecho"></p>
+    <button class="btn-ler" onclick="abrirLeitura()">ler o texto completo</button>
+  </div>
+  <div class="semanas-nav" id="semanas-nav"></div>
+  <button class="btn-som" id="btn-som" onclick="toggleSom()">som ambiente</button>
+  <button class="btn-mensagem" onclick="goView('mensagem')">deixe algo aqui</button>
+</div>
+
+<!-- LEITURA -->
+<div class="view" id="view-leitura">
+  <div class="leitura-bg" id="leitura-bg"></div>
+  <div class="leitura-veil"></div>
+  <div class="leitura-corpo">
+    <p class="leitura-semana" id="leitura-semana"></p>
+    <h1 class="leitura-titulo" id="leitura-titulo"></h1>
+    <div class="leitura-separador"></div>
+    <p class="leitura-texto" id="leitura-texto"></p>
+    <button class="btn-voltar" onclick="goView('hero')">&#8592; voltar</button>
+  </div>
+</div>
+
+<!-- ARQUIVO -->
+<div class="view" id="view-arquivo">
+  <div class="arquivo-header">
+    <div class="arquivo-logo">respiro</div>
+    <div class="arquivo-sub">arquivo de textos</div>
+  </div>
+  <div class="arquivo-grid" id="arquivo-grid"></div>
+</div>
+
+<!-- MENSAGEM -->
+<div class="view" id="view-mensagem">
+  <div class="mensagem-box">
+    <h2 class="mensagem-titulo">o que você carrega hoje?</h2>
+    <p class="mensagem-sub">sua mensagem chegará só a mim. com cuidado.</p>
+    <div id="mensagem-form">
+      <textarea class="mensagem-textarea" id="msg-input" placeholder="hoje eu sinto..." maxlength="300" oninput="atualizaCount()"></textarea>
+      <div class="mensagem-count"><span id="msg-count">0</span>/300</div>
+      <button class="btn-enviar" onclick="enviarMensagem()">enviar</button>
+    </div>
+    <div class="mensagem-ok" id="mensagem-ok">
+      <p class="mensagem-ok-texto">obrigada por confiar.<br>isso chegou até mim.</p>
+      <button class="btn-voltar" style="margin-top:2rem;display:inline-flex;" onclick="goView('hero')">&#8592; voltar</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN (acesso oculto via #admin) -->
+<div class="view" id="view-login">
+  <div class="login-box">
+    <div class="login-logo">respiro</div>
+    <div class="login-sub">painel</div>
+    <input type="password" class="login-input" id="login-senha" placeholder="· · · · · ·">
+    <button class="btn-login" onclick="fazerLogin()">entrar</button>
+    <p class="login-erro" id="login-erro">senha incorreta</p>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div class="view" id="view-admin">
+  <div class="admin-container">
+    <div class="admin-logo">respiro</div>
+    <div class="admin-subtag">painel de publicação</div>
+
+    <div class="admin-section">
+      <label class="admin-label">título do texto</label>
+      <input type="text" class="admin-input" id="admin-titulo" placeholder="como eu chamo este texto...">
+    </div>
+    <div class="admin-section">
+      <label class="admin-label">texto completo</label>
+      <textarea class="admin-textarea" id="admin-texto" placeholder="escreva aqui..."></textarea>
+    </div>
+    <div class="admin-section">
+      <label class="admin-label">mídia da semana (imagem ou vídeo curto)</label>
+      <label class="admin-file-label">
+        <input type="file" id="admin-midia" accept="image/*,video/*" onchange="previewMidia(this)">
+        <span id="admin-file-txt">escolher arquivo...</span>
+      </label>
+      <img id="admin-preview-img" class="admin-preview" alt="">
+      <video id="admin-preview-vid" class="admin-preview" muted loop playsinline></video>
+    </div>
+    <div class="admin-section">
+      <label class="admin-label">número da semana</label>
+      <input type="number" class="admin-input" id="admin-semana-num" placeholder="ex: 01" min="1" style="width:130px">
+    </div>
+    <button class="btn-publicar" onclick="publicarTexto()">publicar esta semana</button>
+    <p id="admin-status"></p>
+
+    <hr class="admin-sep">
+    <div class="admin-msg-titulo">mensagens recebidas</div>
+    <div id="admin-msgs"></div>
+
+    <hr class="admin-sep">
+    <button class="btn-voltar" style="display:inline-flex;color:var(--text-soft);" onclick="goView('hero')">&#8592; sair do painel</button>
+  </div>
+</div>
+
+<script>
+/* ── CONFIGURAÇÃO ─────────────────────────── */
+const SENHA_ADMIN = 'respiro2025';
+
+/* ── DADOS PADRÃO ────────────────────────── */
+const dadosPadrao = [
+  {
+    id: 1, semana: '01', ano: '2025',
+    titulo: 'o peso das coisas leves',
+    texto: 'Há coisas que não pesam nada e ainda assim nos curvam.\n\nComo uma palavra dita de passagem que ficou. Como a luz de uma tarde específica que nunca mais voltou exatamente assim. Como o cheiro de uma pessoa que já foi.\n\nEu penso nisso às vezes — no que nos curva sem nos quebrar. No que fica no corpo como memória que não escolhemos guardar.\n\nTalvez seja isso: que o leve pode ser o mais permanente de tudo.',
+    midia: '', tipo: 'image'
+  },
+  {
+    id: 2, semana: '02', ano: '2025',
+    titulo: 'chuva sobre o que não está lá',
+    texto: 'Choveu hoje sobre a cidade inteira.\n\nEu pensei em você — não da forma que machuca, mas da forma que reconhece. Como quando você vê um pássaro específico e lembra de algo que não tem nome.\n\nA chuva não pergunta se é hora. Ela só chega, cobre tudo por um tempo, e vai. Deixa o ar diferente.\n\nTalvez seja essa a graça das coisas que passam.',
+    midia: '', tipo: 'image'
+  }
+];
+
+/* ── ESTADO ──────────────────────────────── */
+let semanaAtual = 0;
+let logado = false;
+let audioCtx = null;
+let somOn = false;
+let somNodes = {};
+
+/* ── STORAGE ─────────────────────────────── */
+function carregarTextos() {
+  try { const s = localStorage.getItem('respiro_textos'); return s ? JSON.parse(s) : dadosPadrao; }
+  catch(e) { return dadosPadrao; }
+}
+function salvarTextos(t) {
+  try { localStorage.setItem('respiro_textos', JSON.stringify(t)); } catch(e) {}
+}
+function carregarMensagens() {
+  try { const s = localStorage.getItem('respiro_mensagens'); return s ? JSON.parse(s) : []; }
+  catch(e) { return []; }
+}
+function salvarMensagens(m) {
+  try { localStorage.setItem('respiro_mensagens', JSON.stringify(m)); } catch(e) {}
+}
+
+/* ── NAVEGAÇÃO ───────────────────────────── */
+function goView(id) {
+  if (id === 'admin' && !logado) { id = 'login'; }
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + id).classList.add('active');
+  // nav só some na tela de login
+  document.getElementById('main-nav').style.display = (id === 'login') ? 'none' : 'flex';
+  if (id === 'hero')     renderHero();
+  if (id === 'arquivo')  renderArquivo();
+  if (id === 'admin')    renderAdmin();
+  if (id === 'mensagem') resetMensagem();
+  window.scrollTo(0, 0);
+}
+
+/* ── HERO ────────────────────────────────── */
+function renderHero() {
+  const textos = carregarTextos();
+  if (!textos.length) return;
+  semanaAtual = Math.min(semanaAtual, textos.length - 1);
+  mostrarSemana(semanaAtual);
+  const nav = document.getElementById('semanas-nav');
+  nav.innerHTML = '';
+  textos.forEach(function(_, i) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === semanaAtual ? ' active' : '');
+    d.onclick = function() { semanaAtual = i; mostrarSemana(i); };
+    nav.appendChild(d);
+  });
+}
+
+function mostrarSemana(i) {
+  const textos = carregarTextos();
+  const t = textos[i];
+  document.getElementById('hero-semana').textContent = 'semana ' + t.semana + ' · ' + t.ano;
+  document.getElementById('hero-titulo').textContent = t.titulo;
+  const primeiro = t.texto.split('\n\n')[0];
+  document.getElementById('hero-trecho').textContent =
+    primeiro.length > 130 ? primeiro.slice(0, 130) + '…' : primeiro;
+  const bg = document.getElementById('hero-bg');
+  bg.style.backgroundImage = (t.midia && t.tipo === 'image') ? "url('" + t.midia + "')" : 'none';
+  document.querySelectorAll('.dot').forEach(function(d, j) {
+    d.classList.toggle('active', j === i);
+  });
+  semanaAtual = i;
+}
+
+/* ── LEITURA ─────────────────────────────── */
+function abrirLeitura() {
+  const textos = carregarTextos();
+  const t = textos[semanaAtual];
+  document.getElementById('leitura-semana').textContent = 'semana ' + t.semana + ' · ' + t.ano;
+  document.getElementById('leitura-titulo').textContent = t.titulo;
+  document.getElementById('leitura-texto').textContent = t.texto;
+  const bg = document.getElementById('leitura-bg');
+  bg.style.backgroundImage = (t.midia && t.tipo === 'image') ? "url('" + t.midia + "')" : 'none';
+  goView('leitura');
+}
+
+/* ── ARQUIVO ─────────────────────────────── */
+function renderArquivo() {
+  const textos = carregarTextos();
+  const grid = document.getElementById('arquivo-grid');
+  grid.innerHTML = '';
+  textos.forEach(function(t, i) {
+    const card = document.createElement('div');
+    card.className = 'arquivo-card';
+    const bgStyle = (t.midia && t.tipo === 'image')
+      ? "background-image:url('" + t.midia + "');background-color:#1a1a18;"
+      : "background-color:#1a1a18;";
+    card.innerHTML =
+      '<div class="arquivo-card-bg" style="' + bgStyle + '"></div>' +
+      '<div class="arquivo-card-info">' +
+        '<div class="arquivo-semana-card">semana ' + t.semana + '</div>' +
+        '<div class="arquivo-titulo-card">' + escapeHtml(t.titulo) + '</div>' +
+      '</div>';
+    card.onclick = function() { semanaAtual = i; abrirLeitura(); };
+    grid.appendChild(card);
+  });
+}
+
+/* ── MENSAGEM ────────────────────────────── */
+function atualizaCount() {
+  document.getElementById('msg-count').textContent = document.getElementById('msg-input').value.length;
+}
+function resetMensagem() {
+  document.getElementById('msg-input').value = '';
+  document.getElementById('msg-count').textContent = '0';
+  document.getElementById('mensagem-form').style.display = 'block';
+  document.getElementById('mensagem-ok').style.display = 'none';
+}
+function enviarMensagem() {
+  const txt = document.getElementById('msg-input').value.trim();
+  if (!txt) return;
+  const msgs = carregarMensagens();
+  msgs.unshift({ texto: txt, data: new Date().toLocaleDateString('pt-BR'), nova: true });
+  salvarMensagens(msgs);
+  document.getElementById('mensagem-form').style.display = 'none';
+  document.getElementById('mensagem-ok').style.display = 'block';
+}
+
+/* ── LOGIN ───────────────────────────────── */
+function fazerLogin() {
+  const s = document.getElementById('login-senha').value;
+  if (s === SENHA_ADMIN) {
+    logado = true;
+    document.getElementById('login-erro').style.display = 'none';
+    document.getElementById('login-senha').value = '';
+    document.getElementById('main-nav').style.display = 'flex';
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-admin').classList.add('active');
+    renderAdmin();
+    window.scrollTo(0, 0);
+  } else {
+    document.getElementById('login-erro').style.display = 'block';
+  }
+}
+
+/* ── ADMIN ───────────────────────────────── */
+function previewMidia(input) {
+  const file = input.files[0];
+  if (!file) return;
+  document.getElementById('admin-file-txt').textContent = file.name;
+  const img = document.getElementById('admin-preview-img');
+  const vid = document.getElementById('admin-preview-vid');
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    if (file.type.startsWith('image')) {
+      img.src = e.target.result; img.style.display = 'block'; vid.style.display = 'none';
+    } else {
+      vid.src = e.target.result; vid.style.display = 'block'; vid.play(); img.style.display = 'none';
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function publicarTexto() {
+  const titulo   = document.getElementById('admin-titulo').value.trim();
+  const texto    = document.getElementById('admin-texto').value.trim();
+  const semNum   = document.getElementById('admin-semana-num').value.trim();
+  const fileInput = document.getElementById('admin-midia');
+  const statusEl  = document.getElementById('admin-status');
+
+  if (!titulo || !texto || !semNum) {
+    statusEl.textContent = 'preencha título, texto e número da semana.';
+    statusEl.className = 'status-err'; return;
+  }
+
+  function salvar(midiaData, tipo) {
+    const textos = carregarTextos();
+    textos.unshift({ id: Date.now(), semana: semNum.padStart(2,'0'), ano: new Date().getFullYear().toString(), titulo, texto, midia: midiaData, tipo });
+    salvarTextos(textos);
+    semanaAtual = 0;
+    document.getElementById('admin-titulo').value = '';
+    document.getElementById('admin-texto').value = '';
+    document.getElementById('admin-semana-num').value = '';
+    document.getElementById('admin-file-txt').textContent = 'escolher arquivo...';
+    document.getElementById('admin-preview-img').style.display = 'none';
+    document.getElementById('admin-preview-vid').style.display = 'none';
+    fileInput.value = '';
+    statusEl.textContent = '✓ publicado com sucesso.';
+    statusEl.className = 'status-ok';
+    renderAdmin();
+  }
+
+  if (fileInput.files[0]) {
+    const file = fileInput.files[0];
+    if (file.size > 4 * 1024 * 1024) {
+      statusEl.textContent = 'arquivo muito grande. use imagens menores que 4 MB.';
+      statusEl.className = 'status-err'; return;
+    }
+    const tipo = file.type.startsWith('image') ? 'image' : 'video';
+    const reader = new FileReader();
+    reader.onload = function(e) { salvar(e.target.result, tipo); };
+    reader.readAsDataURL(file);
+  } else { salvar('', 'image'); }
+}
+
+function renderAdmin() {
+  const msgs = carregarMensagens();
+  const cont = document.getElementById('admin-msgs');
+  if (!msgs.length) { cont.innerHTML = '<p class="sem-msgs">nenhuma mensagem ainda.</p>'; return; }
+  cont.innerHTML = msgs.map(function(m, i) {
+    return '<div class="msg-card ' + (m.nova ? 'nova' : '') + '">' +
+      '<p class="msg-texto">"' + escapeHtml(m.texto) + '"</p>' +
+      '<p class="msg-data">' + m.data + '</p>' +
+      '<button class="btn-del-msg" onclick="deletarMsg(' + i + ')">&#215;</button>' +
+    '</div>';
+  }).join('');
+  msgs.forEach(function(m) { m.nova = false; });
+  salvarMensagens(msgs);
+}
+
+function deletarMsg(i) {
+  const msgs = carregarMensagens(); msgs.splice(i, 1);
+  salvarMensagens(msgs); renderAdmin();
+}
+
+function escapeHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ── SOM AMBIENTE — natureza calma (Web Audio API) ── */
+function criarSomNatureza() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const ctx = audioCtx;
+  const now = ctx.currentTime;
+  const nos = [];
+
+  // --- RUÍDO ROSA (vento base) ---
+  // Ruído rosa soa muito mais orgânico que branco pois decai com a frequência
+  const bufSize = 4 * ctx.sampleRate;
+  const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+  const d = buf.getChannelData(0);
+  // algoritmo de ruído rosa (filtro IIR simples sobre branco)
+  let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+  for (let i = 0; i < bufSize; i++) {
+    const w = Math.random() * 2 - 1;
+    b0 = 0.99886*b0 + w*0.0555179; b1 = 0.99332*b1 + w*0.0750759;
+    b2 = 0.96900*b2 + w*0.1538520; b3 = 0.86650*b3 + w*0.3104856;
+    b4 = 0.55000*b4 + w*0.5329522; b5 = -0.7616*b5 - w*0.0168980;
+    d[i] = (b0+b1+b2+b3+b4+b5+b6+w*0.5362) * 0.11;
+    b6 = w * 0.115926;
+  }
+  const ventoSrc = ctx.createBufferSource();
+  ventoSrc.buffer = buf; ventoSrc.loop = true;
+
+  // filtro que deixa só o range de vento suave (~80-400 Hz)
+  const ventoFilt = ctx.createBiquadFilter();
+  ventoFilt.type = 'bandpass'; ventoFilt.frequency.value = 180; ventoFilt.Q.value = 0.5;
+
+  const ventoGain = ctx.createGain();
+  ventoGain.gain.setValueAtTime(0, now);
+  ventoGain.gain.linearRampToValueAtTime(0.55, now + 4); // fade lento
+
+  // LFO de vento — variação muito suave, como rajadas distantes
+  const ventoLFO = ctx.createOscillator();
+  ventoLFO.type = 'sine'; ventoLFO.frequency.value = 0.05;
+  const ventoLFOGain = ctx.createGain(); ventoLFOGain.gain.value = 0.18;
+  ventoLFO.connect(ventoLFOGain); ventoLFOGain.connect(ventoGain.gain);
+  ventoLFO.start();
+
+  ventoSrc.connect(ventoFilt); ventoFilt.connect(ventoGain);
+
+  // --- FOLHAS (sussurro de folhagem) ---
+  const bufFolha = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+  const df = bufFolha.getChannelData(0);
+  for (let i = 0; i < bufSize; i++) df[i] = Math.random() * 2 - 1;
+  const folhaSrc = ctx.createBufferSource();
+  folhaSrc.buffer = bufFolha; folhaSrc.loop = true;
+
+  const folhaFilt = ctx.createBiquadFilter();
+  folhaFilt.type = 'highpass'; folhaFilt.frequency.value = 4000; folhaFilt.Q.value = 0.3;
+
+  const folhaGain = ctx.createGain();
+  folhaGain.gain.setValueAtTime(0, now);
+  folhaGain.gain.linearRampToValueAtTime(0.04, now + 5);
+
+  // LFO de folhas — mais rápido, irregular
+  const folhaLFO = ctx.createOscillator();
+  folhaLFO.type = 'sine'; folhaLFO.frequency.value = 0.13;
+  const folhaLFOGain = ctx.createGain(); folhaLFOGain.gain.value = 0.03;
+  folhaLFO.connect(folhaLFOGain); folhaLFOGain.connect(folhaGain.gain);
+  folhaLFO.start();
+
+  folhaSrc.connect(folhaFilt); folhaFilt.connect(folhaGain);
+
+  // --- GRILOS (suavíssimos, noturnos) ---
+  // Grilo real: ~4000-4500 Hz com tremolo em ~15 Hz
+  const griloOsc = ctx.createOscillator();
+  griloOsc.type = 'sine'; griloOsc.frequency.value = 4200;
+
+  const griloGain = ctx.createGain();
+  griloGain.gain.setValueAtTime(0, now);
+  griloGain.gain.linearRampToValueAtTime(0.018, now + 6);
+
+  // tremolo do grilo
+  const griloTrem = ctx.createOscillator();
+  griloTrem.type = 'sine'; griloTrem.frequency.value = 16;
+  const griloTremGain = ctx.createGain(); griloTremGain.gain.value = 0.015;
+  griloTrem.connect(griloTremGain); griloTremGain.connect(griloGain.gain);
+  griloTrem.start();
+
+  // pulso lento (grilos param e voltam)
+  const griloPulso = ctx.createOscillator();
+  griloPulso.type = 'sine'; griloPulso.frequency.value = 0.08;
+  const griloPulsoGain = ctx.createGain(); griloPulsoGain.gain.value = 0.012;
+  griloPulso.connect(griloPulsoGain); griloPulsoGain.connect(griloGain.gain);
+  griloPulso.start();
+
+  griloOsc.connect(griloGain);
+
+  // --- MASTER GAIN (volume geral baixo e calmo) ---
+  const master = ctx.createGain();
+  master.gain.value = 0.38;
+
+  ventoGain.connect(master);
+  folhaGain.connect(master);
+  griloGain.connect(master);
+  master.connect(ctx.destination);
+
+  ventoSrc.start(); folhaSrc.start(); griloOsc.start();
+
+  somNodes = {
+    srcs: [ventoSrc, folhaSrc, griloOsc],
+    lfos: [ventoLFO, ventoLFOGain, folhaLFO, folhaLFOGain, griloTrem, griloTremGain, griloPulso, griloPulsoGain],
+    master
+  };
+}
+
+function pararSomNatureza() {
+  if (!somNodes.master) return;
+  somNodes.master.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 2.5);
+  setTimeout(function() {
+    try {
+      somNodes.srcs.forEach(function(s) { s.stop(); });
+      somNodes.lfos.forEach(function(l) { if (l.stop) l.stop(); });
+    } catch(e) {}
+    somNodes = {};
+  }, 3000);
+}
+
+function toggleSom() {
+  somOn = !somOn;
+  const btn = document.getElementById('btn-som');
+  if (somOn) {
+    criarSomNatureza();
+    btn.innerHTML = '<span class="som-on-dot"></span>som ambiente';
+    btn.classList.add('on');
+  } else {
+    pararSomNatureza();
+    btn.innerHTML = 'som ambiente';
+    btn.classList.remove('on');
+  }
+}
+
+/* ── ROTA POR HASH (acesso admin oculto) ──── */
+function rotearHash() {
+  const hash = window.location.hash;
+  if (hash === '#admin') {
+    goView(logado ? 'admin' : 'login');
+  }
+}
+
+/* ── INIT ────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', function() {
+  renderHero();
+  rotearHash();
+  document.getElementById('login-senha').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') fazerLogin();
+  });
+  window.addEventListener('hashchange', rotearHash);
+});
+</script>
+</body>
+</html>
