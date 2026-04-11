@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>respiro</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --serif: Georgia, 'Times New Roman', serif;
+  --sans: system-ui, sans-serif;
+  --areia:  #f7f3ec;
+  --areia2: #efe9dd;
+  --areia3: #e5ddd0;
+  --text-dark: #2a2620;
+  --text-mid:  #5a5248;
+  --text-soft: #9a9288;
+  --verde:     #3a5a46;
+  --bege-borda: #d8d0c0;
+}
+html, body { height: 100%; font-family: var(--sans); background: var(--areia); color: var(--text-dark); }
+
+/* NAV */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1.2rem 2rem;
+  background: linear-gradient(to bottom, rgba(247,243,236,0.85), transparent);
+  backdrop-filter: blur(2px);
+}
+.logo { font-family: var(--serif); font-style: italic; font-size: 1.5rem; letter-spacing: 0.05em; color: var(--text-dark); cursor: pointer; }
+.nav-links { display: flex; gap: 1.5rem; align-items: center; }
+.nav-links button {
+  background: none; border: none; color: var(--text-mid); font-size: 0.78rem;
+  letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer; transition: color 0.2s;
+}
+.nav-links button:hover { color: var(--text-dark); }
+
+/* VIEWS */
+.view { display: none; min-height: 100vh; }
+.view.active { display: block; }
+
+/* ===== HERO ===== */
+#view-hero {
+  position: relative; height: 100vh; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.hero-bg {
+  position: absolute; inset: 0; z-index: 0;
+  background-size: cover; background-position: center;
+  background-color: var(--areia2);
+  filter: blur(6px) brightness(1.05) saturate(0.85);
+  transform: scale(1.06);
+  transition: background-image 0.9s ease;
+}
+/* véu claro em vez de escuro */
+.hero-veil {
+  position: absolute; inset: 0; z-index: 1;
+  background: rgba(247,243,236,0.52);
+}
+.hero-content {
+  position: relative; z-index: 2; text-align: center;
+  max-width: 660px; padding: 2rem;
+}
+.semana-label {
+  font-size: 0.7rem; letter-spacing: 0.24em; text-transform: uppercase;
+  color: var(--text-soft); margin-bottom: 1.4rem;
+}
+.hero-titulo {
+  font-family: var(--serif); font-style: italic;
+  font-size: clamp(2rem, 5vw, 3.4rem); font-weight: 400;
+  color: var(--text-dark); line-height: 1.2; margin-bottom: 1.4rem;
+}
+.hero-trecho {
+  font-size: 1rem; color: var(--text-mid);
+  line-height: 1.85; margin-bottom: 2.5rem; font-style: italic;
+}
+.btn-ler {
+  display: inline-block; padding: 0.7rem 2.4rem;
+  border: 1px solid var(--bege-borda); color: var(--text-dark);
+  font-size: 0.76rem; letter-spacing: 0.18em; text-transform: uppercase;
+  background: rgba(247,243,236,0.6); cursor: pointer;
+  transition: background 0.25s, border-color 0.25s;
+}
+.btn-ler:hover { background: rgba(247,243,236,0.9); border-color: var(--text-soft); }
+
+.semanas-nav {
+  position: fixed; right: 1.5rem; top: 50%; transform: translateY(-50%);
+  z-index: 50; display: flex; flex-direction: column; gap: 10px;
+}
+.dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--bege-borda); cursor: pointer; transition: all 0.2s;
+}
+.dot.active { background: var(--text-mid); transform: scale(1.4); }
+
+.btn-som {
+  position: fixed; bottom: 1.5rem; left: 1.5rem; z-index: 50;
+  background: rgba(247,243,236,0.75); border: 1px solid var(--bege-borda);
+  color: var(--text-soft); font-size: 0.68rem; letter-spacing: 0.1em;
+  text-transform: uppercase; padding: 0.5rem 1rem; cursor: pointer;
+  transition: all 0.2s; border-radius: 2px; backdrop-filter: blur(4px);
+}
+.btn-som:hover { background: rgba(247,243,236,0.95); color: var(--text-dark); border-color: var(--text-soft); }
+.btn-som.on { color: var(--verde); border-color: var(--verde); }
+
+.btn-mensagem {
+  position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 50;
+  background: rgba(247,243,236,0.75); border: 1px solid var(--bege-borda);
+  color: var(--text-soft); font-size: 0.68rem; letter-spacing: 0.1em;
+  text-transform: uppercase; padding: 0.5rem 1rem; cursor: pointer;
+  transition: all 0.2s; border-radius: 2px; backdrop-filter: blur(4px);
+}
+.btn-mensagem:hover { background: rgba(247,243,236,0.95); color: var(--text-dark); border-color: var(--text-soft); }
+
+@keyframes pulseGreen { 0%,100%{opacity:0.4} 50%{opacity:1} }
+.som-on-dot {
+  display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--verde); margin-right: 5px;
+  animation: pulseGreen 1.6s ease infinite; vertical-align: middle;
+}
+
+/* ===== LEITURA ===== */
+#view-leitura { min-height: 100vh; position: relative; background: var(--areia); }
+.leitura-bg {
+  position: fixed; inset: 0; z-index: 0;
+  background-size: cover; background-position: center; background-color: var(--areia2);
+  filter: blur(14px) brightness(1.08) saturate(0.75);
+  transform: scale(1.1);
+}
+.leitura-veil {
+  position: fixed; inset: 0; z-index: 1;
+  background: rgba(247,243,236,0.72);
+}
+.leitura-corpo {
+  position: relative; z-index: 2;
+  max-width: 560px; margin: 0 auto; padding: 7rem 2rem 5rem;
+}
+.leitura-semana {
+  font-size: 0.68rem; letter-spacing: 0.24em; text-transform: uppercase;
+  color: var(--text-soft); margin-bottom: 1rem;
+}
+.leitura-titulo {
+  font-family: var(--serif); font-style: italic; font-weight: 400;
+  font-size: clamp(1.8rem, 4vw, 2.7rem); color: var(--text-dark);
+  line-height: 1.25; margin-bottom: 2.5rem;
+}
+.leitura-texto {
+  font-size: 1.05rem; line-height: 2.05; color: var(--text-mid);
+  white-space: pre-wrap;
+}
+.leitura-separador { width: 36px; height: 1px; background: var(--bege-borda); margin: 3rem 0; }
+.btn-voltar {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: none; border: none; color: var(--text-soft);
+  font-size: 0.73rem; letter-spacing: 0.15em; text-transform: uppercase;
+  cursor: pointer; transition: color 0.2s; margin-top: 3rem;
+}
+.btn-voltar:hover { color: var(--text-dark); }
+
+/* ===== ARQUIVO ===== */
+#view-arquivo { background: var(--areia); min-height: 100vh; }
+.arquivo-header { padding: 7rem 2rem 3rem; text-align: center; }
+.arquivo-logo { font-family: var(--serif); font-style: italic; font-size: 2rem; color: var(--text-dark); margin-bottom: 0.5rem; }
+.arquivo-sub { font-size: 0.73rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-soft); }
+.arquivo-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1px; background: var(--bege-borda); border-top: 1px solid var(--bege-borda);
+}
+.arquivo-card { position: relative; overflow: hidden; cursor: pointer; aspect-ratio: 3/4; background: var(--areia2); }
+.arquivo-card-bg {
+  position: absolute; inset: 0; background-size: cover; background-position: center;
+  filter: brightness(0.92) saturate(0.8);
+  transition: transform 0.4s ease, filter 0.3s;
+}
+.arquivo-card:hover .arquivo-card-bg { transform: scale(1.04); filter: brightness(0.82) saturate(0.9); }
+.arquivo-card-info {
+  position: absolute; bottom: 0; left: 0; right: 0; padding: 1.5rem 1rem 1rem;
+  background: linear-gradient(to top, rgba(247,243,236,0.88), transparent);
+}
+.arquivo-semana-card { font-size: 0.63rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-soft); }
+.arquivo-titulo-card { font-family: var(--serif); font-style: italic; font-size: 1.05rem; color: var(--text-dark); margin-top: 0.3rem; }
+
+/* ===== MENSAGEM ===== */
+#view-mensagem { background: var(--areia); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+.mensagem-box { max-width: 520px; width: 100%; padding: 2rem; }
+.mensagem-titulo { font-family: var(--serif); font-style: italic; font-size: 1.8rem; color: var(--text-dark); margin-bottom: 0.5rem; }
+.mensagem-sub { font-size: 0.78rem; color: var(--text-soft); letter-spacing: 0.08em; margin-bottom: 2.5rem; }
+.mensagem-textarea {
+  width: 100%; background: #fff; border: 1px solid var(--bege-borda);
+  color: var(--text-dark); padding: 1.2rem; font-size: 1rem;
+  font-family: var(--serif); font-style: italic; line-height: 1.75;
+  resize: none; height: 160px; border-radius: 2px; outline: none; transition: border-color 0.2s;
+}
+.mensagem-textarea:focus { border-color: var(--text-soft); }
+.mensagem-textarea::placeholder { color: var(--bege-borda); }
+.mensagem-count { text-align: right; font-size: 0.7rem; color: var(--text-soft); margin-top: 0.4rem; }
+.btn-enviar {
+  margin-top: 1.5rem; width: 100%; padding: 0.9rem; background: var(--text-dark);
+  color: var(--areia); border: none; font-size: 0.76rem; letter-spacing: 0.18em;
+  text-transform: uppercase; cursor: pointer; transition: opacity 0.25s; border-radius: 2px;
+}
+.btn-enviar:hover { opacity: 0.82; }
+.mensagem-ok { display: none; text-align: center; padding: 2rem 0; }
+.mensagem-ok-texto { font-family: var(--serif); font-style: italic; font-size: 1.1rem; color: var(--text-mid); line-height: 1.9; }
+
+/* ===== LOGIN ===== */
+#view-login { background: var(--areia); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+.login-box { max-width: 340px; width: 100%; padding: 2rem; text-align: center; }
+.login-logo { font-family: var(--serif); font-style: italic; font-size: 2rem; color: var(--text-dark); margin-bottom: 0.3rem; }
+.login-sub { font-size: 0.7rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-soft); margin-bottom: 2rem; }
+.login-input {
+  width: 100%; background: #fff; border: 1px solid var(--bege-borda); color: var(--text-dark);
+  padding: 0.8rem 1rem; font-size: 0.95rem; border-radius: 2px; outline: none;
+  text-align: center; letter-spacing: 0.2em; margin-bottom: 1rem; transition: border-color 0.2s;
+}
+.login-input:focus { border-color: var(--text-soft); }
+.btn-login { width: 100%; padding: 0.8rem; background: var(--text-dark); color: var(--areia); border: none; font-size: 0.74rem; letter-spacing: 0.18em; text-transform: uppercase; cursor: pointer; border-radius: 2px; transition: opacity 0.2s; }
+.btn-login:hover { opacity: 0.82; }
+.login-erro { font-size: 0.76rem; color: #904030; margin-top: 0.6rem; display: none; }
+
+/* ===== ADMIN ===== */
+#view-admin { background: var(--areia); min-height: 100vh; }
+.admin-container { max-width: 700px; margin: 0 auto; padding: 6rem 2rem 4rem; }
+.admin-logo { font-family: var(--serif); font-style: italic; font-size: 1.5rem; color: var(--text-dark); margin-bottom: 0.3rem; }
+.admin-subtag { font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-soft); margin-bottom: 2.5rem; }
+.admin-section { margin-bottom: 2rem; }
+.admin-label { display: block; font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-soft); margin-bottom: 0.6rem; }
+.admin-input, .admin-textarea {
+  width: 100%; background: #fff; border: 1px solid var(--bege-borda); color: var(--text-dark);
+  padding: 0.8rem 1rem; font-size: 0.95rem; font-family: var(--serif); border-radius: 2px;
+  outline: none; transition: border-color 0.2s;
+}
+.admin-input:focus, .admin-textarea:focus { border-color: var(--text-soft); }
+.admin-textarea { resize: vertical; min-height: 180px; line-height: 1.7; }
+.admin-file-label {
+  display: flex; align-items: center; gap: 10px; border: 1px dashed var(--bege-borda);
+  padding: 1rem 1.2rem; cursor: pointer; color: var(--text-soft); font-size: 0.8rem;
+  border-radius: 2px; transition: border-color 0.2s; background: #fff;
+}
+.admin-file-label:hover { border-color: var(--text-soft); color: var(--text-mid); }
+.admin-file-label input { display: none; }
+.admin-preview { margin-top: 0.8rem; max-height: 160px; object-fit: cover; width: 100%; border-radius: 2px; display: none; }
+.btn-publicar { width: 100%; padding: 0.9rem; background: var(--text-dark); color: var(--areia); border: none; font-size: 0.76rem; letter-spacing: 0.18em; text-transform: uppercase; cursor: pointer; border-radius: 2px; transition: opacity 0.2s; }
+.btn-publicar:hover { opacity: 0.85; }
+.admin-sep { border: none; border-top: 1px solid var(--bege-borda); margin: 2.5rem 0; }
+.admin-msg-titulo { font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-soft); margin-bottom: 1rem; }
+.msg-card { background: #fff; border: 1px solid var(--areia3); border-radius: 2px; padding: 1rem 1.2rem; margin-bottom: 0.8rem; position: relative; }
+.msg-card.nova { border-left: 3px solid var(--verde); }
+.msg-texto { font-family: var(--serif); font-style: italic; font-size: 0.95rem; color: var(--text-dark); line-height: 1.75; margin-bottom: 0.5rem; }
+.msg-data { font-size: 0.68rem; color: var(--text-soft); }
+.btn-del-msg { position: absolute; top: 0.8rem; right: 0.8rem; background: none; border: none; color: var(--bege-borda); cursor: pointer; font-size: 1.1rem; transition: color 0.2s; }
+.btn-del-msg:hover { color: var(--text-soft); }
+.sem-msgs { font-size: 0.85rem; color: var(--text-soft); font-style: italic; }
+.admin-status-ok  { font-size: 0.8rem; color: var(--verde); margin-top: 0.7rem; }
+.admin-status-err { font-size: 0.8rem; color: #904030; margin-top: 0.7rem; }
+</style>
+</head>
+<body>
+
+<nav id="main-nav">
+  <div class="logo" onclick="goView('hero')">respiro</div>
+  <div class="nav-links">
+    <button onclick="goView('arquivo')">arquivo</button>
+    <button onclick="goView('mensagem')">escrever</button>
+    <button onclick="goView('login')">admin</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="view active" id="view-hero">
+  <div class="hero-bg" id="hero-bg"></div>
+  <div class="hero-veil"></div>
+  <div class="hero-content">
+    <p class="semana-label" id="hero-semana">semana 01 · 2025</p>
+    <h1 class="hero-titulo" id="hero-titulo"></h1>
+    <p class="hero-trecho" id="hero-trecho"></p>
+    <button class="btn-ler" onclick="abrirLeitura()">ler o texto completo</button>
+  </div>
+  <div class="semanas-nav" id="semanas-nav"></div>
+  <button class="btn-som" id="btn-som" onclick="toggleSom()">som ambiente</button>
+  <button class="btn-mensagem" onclick="goView('mensagem')">deixe algo aqui</button>
+</div>
+
+<!-- LEITURA -->
+<div class="view" id="view-leitura">
+  <div class="leitura-bg" id="leitura-bg"></div>
+  <div class="leitura-veil"></div>
+  <div class="leitura-corpo">
+    <p class="leitura-semana" id="leitura-semana"></p>
+    <h1 class="leitura-titulo" id="leitura-titulo"></h1>
+    <div class="leitura-separador"></div>
+    <p class="leitura-texto" id="leitura-texto"></p>
+    <button class="btn-voltar" onclick="goView('hero')">&#8592; voltar</button>
+  </div>
+</div>
+
+<!-- ARQUIVO -->
+<div class="view" id="view-arquivo">
+  <div class="arquivo-header">
+    <div class="arquivo-logo">respiro</div>
+    <div class="arquivo-sub">arquivo de textos</div>
+  </div>
+  <div class="arquivo-grid" id="arquivo-grid"></div>
+</div>
+
+<!-- MENSAGEM -->
+<div class="view" id="view-mensagem">
+  <div class="mensagem-box">
+    <h2 class="mensagem-titulo">o que você carrega hoje?</h2>
+    <p class="mensagem-sub">sua mensagem chegará só a mim. com cuidado.</p>
+    <div id="mensagem-form">
+      <textarea class="mensagem-textarea" id="msg-input" placeholder="hoje eu sinto..." maxlength="300" oninput="atualizaCount()"></textarea>
+      <div class="mensagem-count"><span id="msg-count">0</span>/300</div>
+      <button class="btn-enviar" onclick="enviarMensagem()">enviar</button>
+    </div>
+    <div class="mensagem-ok" id="mensagem-ok">
+      <p class="mensagem-ok-texto">obrigada por confiar.<br>isso chegou até mim.</p>
+      <button class="btn-voltar" style="margin-top:2rem;display:inline-flex;" onclick="goView('hero')">&#8592; voltar</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div class="view" id="view-login">
+  <div class="login-box">
+    <div class="login-logo">respiro</div>
+    <div class="login-sub">painel</div>
+    <input type="password" class="login-input" id="login-senha" placeholder="· · · · · ·">
+    <button class="btn-login" onclick="fazerLogin()">entrar</button>
+    <p class="login-erro" id="login-erro">senha incorreta</p>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div class="view" id="view-admin">
+  <div class="admin-container">
+    <div class="admin-logo">respiro</div>
+    <div class="admin-subtag">painel de publicação</div>
+    <div class="admin-section">
+      <label class="admin-label">título do texto</label>
+      <input type="text" class="admin-input" id="admin-titulo" placeholder="como eu chamo este texto...">
+    </div>
+    <div class="admin-section">
+      <label class="admin-label">texto completo</label>
+      <textarea class="admin-textarea" id="admin-texto" placeholder="escreva aqui..."></textarea>
+    </div>
+    <div class="admin-section">
+      <label class="admin-label">mídia da semana (imagem ou vídeo curto)</label>
+      <label class="admin-file-label">
+        <input type="file" id="admin-midia" accept="image/*,video/*" onchange="previewMidia(this)">
+        <span id="admin-file-txt">escolher arquivo...</span>
+      </label>
+      <img id="admin-preview-img" class="admin-preview" alt="">
+      <video id="admin-preview-vid" class="admin-preview" muted loop playsinline></video>
+    </div>
+    <div class="admin-section">
+      <label class="admin-label">número da semana</label>
+      <input type="number" class="admin-input" id="admin-semana-num" placeholder="ex: 01" min="1" style="width:140px">
+    </div>
+    <button class="btn-publicar" onclick="publicarTexto()">publicar esta semana</button>
+    <p id="admin-status"></p>
+    <hr class="admin-sep">
+    <div class="admin-msg-titulo">mensagens recebidas</div>
+    <div id="admin-msgs"></div>
+    <button class="btn-voltar" style="margin-top:1.5rem;display:inline-flex;" onclick="goView('hero')">&#8592; sair do painel</button>
+  </div>
+</div>
+
+<script>
+const SENHA_ADMIN = 'respiro2025';
+let semanaAtual = 0;
+let logado = false;
+let audioCtx = null;
+let somOn = false;
+let somNodes = {};
+
+const dadosPadrao = [
+  {
+    id: 1, semana: '01', ano: '2025',
+    titulo: 'o peso das coisas leves',
+    texto: 'Há coisas que não pesam nada e ainda assim nos curvam.\n\nComo uma palavra dita de passagem que ficou. Como a luz de uma tarde específica que nunca mais voltou exatamente assim. Como o cheiro de uma pessoa que já foi.\n\nEu penso nisso às vezes — no que nos curva sem nos quebrar. No que fica no corpo como memória que não escolhemos guardar.\n\nTalvez seja isso: que o leve pode ser o mais permanente de tudo.',
+    midia: '', tipo: 'image'
+  },
+  {
+    id: 2, semana: '02', ano: '2025',
+    titulo: 'chuva sobre o que não está lá',
+    texto: 'Choveu hoje sobre a cidade inteira.\n\nEu pensei em você — não da forma que machuca, mas da forma que reconhece. Como quando você vê um pássaro específico e lembra de algo que não tem nome.\n\nA chuva não pergunta se é hora. Ela só chega, cobre tudo por um tempo, e vai. Deixa o ar diferente.\n\nTalvez seja essa a graça das coisas que passam.',
+    midia: '', tipo: 'image'
+  }
+];
+
+function carregarTextos() {
+  try { const s = localStorage.getItem('respiro_textos'); return s ? JSON.parse(s) : dadosPadrao; } catch(e) { return dadosPadrao; }
+}
+function salvarTextos(t) { try { localStorage.setItem('respiro_textos', JSON.stringify(t)); } catch(e) {} }
+function carregarMensagens() {
+  try { const s = localStorage.getItem('respiro_mensagens'); return s ? JSON.parse(s) : []; } catch(e) { return []; }
+}
+function salvarMensagens(m) { try { localStorage.setItem('respiro_mensagens', JSON.stringify(m)); } catch(e) {} }
+
+function goView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + id).classList.add('active');
+  document.getElementById('main-nav').style.display = id === 'login' ? 'none' : 'flex';
+  if (id === 'hero')     renderHero();
+  if (id === 'arquivo')  renderArquivo();
+  if (id === 'admin')    { if (!logado) { goView('login'); return; } renderAdmin(); }
+  if (id === 'mensagem') resetMensagem();
+  window.scrollTo(0, 0);
+}
+
+function renderHero() {
+  const textos = carregarTextos();
+  if (!textos.length) return;
+  semanaAtual = Math.min(semanaAtual, textos.length - 1);
+  mostrarSemana(semanaAtual);
+  const nav = document.getElementById('semanas-nav');
+  nav.innerHTML = '';
+  textos.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === semanaAtual ? ' active' : '');
+    d.onclick = () => { semanaAtual = i; mostrarSemana(i); atualizarDots(); };
+    nav.appendChild(d);
+  });
+}
+
+function mostrarSemana(i) {
+  const t = carregarTextos()[i];
+  document.getElementById('hero-semana').textContent = 'semana ' + t.semana + ' \u00b7 ' + t.ano;
+  document.getElementById('hero-titulo').textContent = t.titulo;
+  const p = t.texto.split('\n\n')[0];
+  document.getElementById('hero-trecho').textContent = p.length > 120 ? p.slice(0,120) + '\u2026' : p;
+  const bg = document.getElementById('hero-bg');
+  bg.style.backgroundImage = (t.midia && t.tipo === 'image') ? "url('" + t.midia + "')" : 'none';
+  bg.style.backgroundColor = 'var(--areia2)';
+  atualizarDots();
+}
+
+function atualizarDots() {
+  document.querySelectorAll('.dot').forEach((d,i) => d.classList.toggle('active', i === semanaAtual));
+}
+
+function abrirLeitura() {
+  const t = carregarTextos()[semanaAtual];
+  document.getElementById('leitura-semana').textContent = 'semana ' + t.semana + ' \u00b7 ' + t.ano;
+  document.getElementById('leitura-titulo').textContent = t.titulo;
+  document.getElementById('leitura-texto').textContent = t.texto;
+  const bg = document.getElementById('leitura-bg');
+  bg.style.backgroundImage = (t.midia && t.tipo === 'image') ? "url('" + t.midia + "')" : 'none';
+  bg.style.backgroundColor = 'var(--areia2)';
+  goView('leitura');
+}
+
+function renderArquivo() {
+  const textos = carregarTextos();
+  const grid = document.getElementById('arquivo-grid');
+  grid.innerHTML = '';
+  textos.forEach((t, i) => {
+    const card = document.createElement('div');
+    card.className = 'arquivo-card';
+    const bg = (t.midia && t.tipo === 'image') ? "background-image:url('" + t.midia + "');" : '';
+    card.innerHTML =
+      '<div class="arquivo-card-bg" style="' + bg + 'background-color:var(--areia2);"></div>' +
+      '<div class="arquivo-card-info">' +
+        '<div class="arquivo-semana-card">semana ' + t.semana + '</div>' +
+        '<div class="arquivo-titulo-card">' + t.titulo + '</div>' +
+      '</div>';
+    card.onclick = () => { semanaAtual = i; abrirLeitura(); };
+    grid.appendChild(card);
+  });
+}
+
+function atualizaCount() { document.getElementById('msg-count').textContent = document.getElementById('msg-input').value.length; }
+function resetMensagem() {
+  document.getElementById('msg-input').value = '';
+  document.getElementById('msg-count').textContent = '0';
+  document.getElementById('mensagem-form').style.display = 'block';
+  document.getElementById('mensagem-ok').style.display = 'none';
+}
+function enviarMensagem() {
+  const txt = document.getElementById('msg-input').value.trim();
+  if (!txt) return;
+  const msgs = carregarMensagens();
+  msgs.unshift({ texto: txt, data: new Date().toLocaleDateString('pt-BR'), nova: true });
+  salvarMensagens(msgs);
+  document.getElementById('mensagem-form').style.display = 'none';
+  document.getElementById('mensagem-ok').style.display = 'block';
+}
+
+function fazerLogin() {
+  const s = document.getElementById('login-senha').value;
+  if (s === SENHA_ADMIN) {
+    logado = true;
+    document.getElementById('login-erro').style.display = 'none';
+    document.getElementById('login-senha').value = '';
+    goView('admin');
+  } else {
+    document.getElementById('login-erro').style.display = 'block';
+  }
+}
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('login-senha').addEventListener('keydown', function(e) { if(e.key==='Enter') fazerLogin(); });
+});
+
+function previewMidia(input) {
+  const file = input.files[0]; if (!file) return;
+  document.getElementById('admin-file-txt').textContent = file.name;
+  const img = document.getElementById('admin-preview-img');
+  const vid = document.getElementById('admin-preview-vid');
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    if (file.type.startsWith('image')) { img.src = e.target.result; img.style.display = 'block'; vid.style.display = 'none'; }
+    else { vid.src = e.target.result; vid.style.display = 'block'; vid.play(); img.style.display = 'none'; }
+  };
+  reader.readAsDataURL(file);
+}
+
+function publicarTexto() {
+  const titulo = document.getElementById('admin-titulo').value.trim();
+  const texto  = document.getElementById('admin-texto').value.trim();
+  const semNum = document.getElementById('admin-semana-num').value.trim();
+  const fileInput = document.getElementById('admin-midia');
+  const statusEl  = document.getElementById('admin-status');
+  if (!titulo || !texto || !semNum) { statusEl.textContent = 'preencha título, texto e número da semana.'; statusEl.className = 'admin-status-err'; return; }
+  function salvar(midiaData, tipo) {
+    const textos = carregarTextos();
+    textos.unshift({ id: Date.now(), semana: semNum.padStart(2,'0'), ano: new Date().getFullYear().toString(), titulo, texto, midia: midiaData, tipo });
+    salvarTextos(textos); semanaAtual = 0;
+    document.getElementById('admin-titulo').value = '';
+    document.getElementById('admin-texto').value = '';
+    document.getElementById('admin-semana-num').value = '';
+    document.getElementById('admin-file-txt').textContent = 'escolher arquivo...';
+    document.getElementById('admin-preview-img').style.display = 'none';
+    document.getElementById('admin-preview-vid').style.display = 'none';
+    fileInput.value = '';
+    statusEl.textContent = '\u2713 publicado com sucesso.'; statusEl.className = 'admin-status-ok';
+    renderAdmin();
+  }
+  if (fileInput.files[0]) {
+    const file = fileInput.files[0];
+    if (file.size > 4*1024*1024) { statusEl.textContent = 'use imagens menores que 4 MB.'; statusEl.className = 'admin-status-err'; return; }
+    const tipo = file.type.startsWith('image') ? 'image' : 'video';
+    const reader = new FileReader(); reader.onload = function(e) { salvar(e.target.result, tipo); }; reader.readAsDataURL(file);
+  } else { salvar('', 'image'); }
+}
+
+function renderAdmin() {
+  const msgs = carregarMensagens();
+  const cont = document.getElementById('admin-msgs');
+  if (!msgs.length) { cont.innerHTML = '<p class="sem-msgs">nenhuma mensagem ainda.</p>'; return; }
+  cont.innerHTML = msgs.map(function(m,i) {
+    return '<div class="msg-card ' + (m.nova?'nova':'') + '">' +
+      '<p class="msg-texto">\u201c' + escapeHtml(m.texto) + '\u201d</p>' +
+      '<p class="msg-data">' + m.data + '</p>' +
+      '<button class="btn-del-msg" onclick="deletarMsg(' + i + ')">\u00d7</button>' +
+    '</div>';
+  }).join('');
+  msgs.forEach(function(m){ m.nova = false; }); salvarMensagens(msgs);
+}
+function deletarMsg(i) { const msgs = carregarMensagens(); msgs.splice(i,1); salvarMensagens(msgs); renderAdmin(); }
+function escapeHtml(str) { return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+/* SOM — Web Audio API */
+function criarSomChuva() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const bufferSize = 2 * audioCtx.sampleRate;
+  const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+  const noise = audioCtx.createBufferSource(); noise.buffer = buffer; noise.loop = true;
+  const filter = audioCtx.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.value = 550; filter.Q.value = 0.7;
+  const gainNode = audioCtx.createGain(); gainNode.gain.setValueAtTime(0, audioCtx.currentTime); gainNode.gain.linearRampToValueAtTime(0.15, audioCtx.currentTime + 1.8);
+  const lfo = audioCtx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 0.06;
+  const lfoGain = audioCtx.createGain(); lfoGain.gain.value = 0.035;
+  lfo.connect(lfoGain); lfoGain.connect(gainNode.gain); lfo.start();
+  noise.connect(filter); filter.connect(gainNode); gainNode.connect(audioCtx.destination); noise.start();
+  somNodes = { noise, filter, gainNode, lfo, lfoGain };
+}
+function pararSomChuva() {
+  if (!somNodes.gainNode) return;
+  somNodes.gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 1.2);
+  setTimeout(function() { try { somNodes.noise.stop(); somNodes.lfo.stop(); } catch(e){} somNodes = {}; }, 1500);
+}
+function toggleSom() {
+  somOn = !somOn;
+  const btn = document.getElementById('btn-som');
+  if (somOn) { criarSomChuva(); btn.innerHTML = '<span class="som-on-dot"></span>som ambiente'; btn.classList.add('on'); }
+  else        { pararSomChuva(); btn.innerHTML = 'som ambiente'; btn.classList.remove('on'); }
+}
+
+document.addEventListener('DOMContentLoaded', function() { renderHero(); });
+</script>
+</body>
+</html>
