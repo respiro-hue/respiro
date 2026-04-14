@@ -14,6 +14,13 @@ res.setHeader('Vary', 'Origin'); // importante para cache
   if (!texto || texto.trim().length === 0) return res.status(400).json({ error: 'texto obrigatório' });
   if (texto.length > 300) return res.status(400).json({ error: 'texto muito longo' });
 
+    // valida formato de email se fornecido
+  if (email && email.trim()) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      return res.status(400).json({ error: 'formato de email inválido' });
+    }
+  }
   const sb = createClient(
     process.env.SUPABASE_URL,
     process.env.SUPABASE_SERVICE_KEY
