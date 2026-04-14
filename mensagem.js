@@ -1,5 +1,18 @@
 import { createClient } from '@supabase/supabase-js';
 
+// função simples para escapar caracteres perigosos de HTML
+function escapeHtml(texto) {
+  if (!texto) return texto;
+  const map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return texto.replace(/[&<>"']/g, (m) => map[m]);
+}
+
 export default async function handler(req, res) {
   // Permitir apenas o domínio do projeto (CORS seguro)
 const allowedOrigin = process.env.ALLOWED_ORIGIN || 'https://respiro.com.br';
@@ -29,7 +42,7 @@ res.setHeader('Vary', 'Origin'); // importante para cache
   // salva mensagem
   const { error: errMsg } = await sb
     .from('mensagens')
-    .insert([{ texto: texto.trim(), email: email?.trim() || null }]);
+    .insert([{ texto: escapeHtml(texto.trim()), email: email?.trim() || null }]);
   if (errMsg) return res.status(500).json({ error: errMsg.message });
 
   // salva email e envia confirmação se fornecido
