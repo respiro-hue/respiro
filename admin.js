@@ -1,7 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  // Permitir apenas o domínio do projeto (CORS seguro)
+const allowedOrigin = process.env.ALLOWED_ORIGIN || 'https://respiro.com.br';
+res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+res.setHeader('Vary', 'Origin'); // importante para cache
   res.setHeader('Access-Control-Allow-Methods', 'GET, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.status(200).end();
