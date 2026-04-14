@@ -1,7 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  // Permitir apenas o domínio do projeto (CORS seguro)
+const allowedOrigin = process.env.ALLOWED_ORIGIN || 'https://respiro.com.br';
+res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+res.setHeader('Vary', 'Origin'); // importante para cache
 
   const sb = createClient(
     process.env.SUPABASE_URL,
