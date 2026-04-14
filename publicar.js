@@ -1,5 +1,18 @@
 import { createClient } from '@supabase/supabase-js';
 
+// função simples para escapar caracteres perigosos de HTML
+function escapeHtml(texto) {
+  if (!texto) return texto;
+  const map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return texto.replace(/[&<>"']/g, (m) => map[m]);
+}
+
 export default async function handler(req, res) {
   // Permitir apenas o domínio do projeto (CORS seguro)
 const allowedOrigin = process.env.ALLOWED_ORIGIN || 'https://respiro.com.br';
@@ -28,7 +41,7 @@ res.setHeader('Vary', 'Origin'); // importante para cache
     if (midia && midia.length > 5 * 1024 * 1024) {
       return res.status(400).json({ error: 'imagem muito grande' });
     }
-    const { error } = await sb.from('textos').insert([{ semana, ano, titulo, texto, midia: midia || '', tipo: tipo || 'image' }]);
+        const { error } = await sb.from('textos').insert([{ semana, ano, titulo: escapeHtml(titulo), texto: escapeHtml(texto), midia: midia || '', tipo: tipo || 'image' }]);
     if (error) return res.status(500).json({ error: error.message });
     return res.status(200).json({ ok: true });
   }
