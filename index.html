@@ -517,6 +517,7 @@ function renderLeitura() {
   const primeiro = idx===0, ultimo = idx===textosCache.length-1;
   ['nav-anterior','rodape-anterior'].forEach(function(id){ document.getElementById(id).classList.toggle('disabled',primeiro); });
   ['nav-proximo','rodape-proximo'].forEach(function(id){ document.getElementById(id).classList.toggle('disabled',ultimo); });
+mostrarPlayerMusica();
 }
 
 function navegarLeitura(dir) {
