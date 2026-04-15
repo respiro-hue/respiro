@@ -716,6 +716,69 @@ document.addEventListener('DOMContentLoaded', function(){
   window.addEventListener('hashchange', rotear);
   document.getElementById('login-senha').addEventListener('keydown', function(e){ if(e.key==='Enter') loginAdmin(); });
 });
+/* ══ CONTROLE DE MÚSICA ══ */
+let musicaAtual = null;
+
+function mostrarPlayerMusica() {
+  const texto = textosCache[idx];
+  if (!texto || (!texto.musica_vocal && !texto.musica_instrumental)) return;
+  
+  const playerDiv = document.getElementById('leitura-music');
+  if (playerDiv) {
+    playerDiv.style.display = 'block';
+    // Começa com a vocal se existir, senão instrumental
+    if (texto.musica_vocal) {
+      carregarMusica(texto.musica_vocal, 'vocal');
+    } else if (texto.musica_instrumental) {
+      carregarMusica(texto.musica_instrumental, 'inst');
+    }
+  }
+}
+
+function carregarMusica(url, tipo) {
+  const playerDiv = document.getElementById('music-player');
+  const btnVocal = document.getElementById('btn-vocal');
+  const btnInst = document.getElementById('btn-inst');
+  
+  if (!playerDiv) return;
+  
+  // Atualiza botões ativos
+  if (btnVocal) btnVocal.classList.toggle('active', tipo === 'vocal');
+  if (btnInst) btnInst.classList.toggle('active', tipo === 'inst');
+  
+  // Detecta se é YouTube ou Spotify e cria o iframe correto
+  let embedUrl = url;
+  
+  if (url.includes('youtube.com') || url.includes('youtu.be')) {
+    // Extrai ID do YouTube
+    const videoId = url.split('v=')[1]?.split('&')[0] || url.split('/').pop();
+    embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+  } else if (url.includes('spotify.com')) {
+    // Converte para embed do Spotify
+    embedUrl = url.replace('open.spotify.com', 'open.spotify.com/embed');
+  }
+  
+  playerDiv.innerHTML = `<iframe src="${embedUrl}" frameborder="0" allowtransparency="true" allow="encrypted-media" style="height:152px;"></iframe>`;
+}
+
+function trocarMusica(tipo) {
+  const texto = textosCache[idx];
+  if (!texto) return;
+  
+  if (tipo === 'vocal' && texto.musica_vocal) {
+    carregarMusica(texto.musica_vocal, 'vocal');
+  } else if (tipo === 'inst' && texto.musica_instrumental) {
+    carregarMusica(texto.musica_instrumental, 'inst');
+  }
+}
+
+function fecharMusica() {
+  const playerDiv = document.getElementById('leitura-music');
+  if (playerDiv) {
+    playerDiv.style.display = 'none';
+    document.getElementById('music-player').innerHTML = '';
+  }
+}
 </script>
 <!-- deploy test: The + Qwen -->
 </body>
