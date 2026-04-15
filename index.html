@@ -332,6 +332,17 @@ hr.sep { border:none; border-top:1px solid #ddd8cc; margin:2.5rem 0; }
       <label class="file-label"><input type="file" id="a-midia" accept="image/*,video/*" onchange="prevMidia(this)"><span id="a-file-nome">escolher arquivo...</span></label>
       <img class="preview-img" id="prev-img" alt=""><video class="preview-vid" id="prev-vid" muted loop playsinline></video>
     </div>
+
+        <!-- NOVOS CAMPOS DE MÚSICA -->
+    <div class="campo">
+      <label>🎵 Link Música (Vocal)</label>
+      <input type="text" id="a-musica-vocal" placeholder="Cole aqui o link do Spotify/YouTube (Vocal)">
+    </div>
+    <div class="campo">
+      <label>🎹 Link Música (Instrumental)</label>
+      <input type="text" id="a-musica-inst" placeholder="Cole aqui o link do Spotify/YouTube (Instrumental)">
+    </div>
+    
     <div class="campo"><label>número da semana</label><input type="number" id="a-semana" placeholder="ex: 01" min="1" style="width:120px"></div>
     <button class="btn-publicar" id="btn-publicar" onclick="publicar()">publicar esta semana</button>
     <p class="admin-status" id="a-status"></p>
