@@ -568,7 +568,17 @@ async function publicar() {
       await api('/api/publicar', {
         method: 'POST',
         headers: authHeader(),
-        body: { semana:sem.padStart(2,'0'), ano:new Date().getFullYear().toString(), titulo, texto, midia:midia||'', tipo:tipo||'image' }
+        body: {
+          semana: sem.padStart(2,'0'),
+          ano: new Date().getFullYear().toString(),
+          titulo,
+          texto,
+          midia: midia || '',
+          tipo: tipo || 'image',
+          // 👇 novos campos de música 👇
+          musica_vocal: document.getElementById('a-musica-vocal').value.trim(),
+          musica_instrumental: document.getElementById('a-musica-inst').value.trim()
+        }
       });
       ['a-titulo','a-texto','a-semana'].forEach(function(id){document.getElementById(id).value='';});
       document.getElementById('a-file-nome').textContent = 'escolher arquivo...';
