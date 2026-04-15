@@ -515,7 +515,7 @@ async function loginAdmin() {
   const s = document.getElementById('login-senha').value;
   // testa a senha contra a API — não há senha no frontend
   try {
-    await api('/api/admin', { method:'GET', headers:{ 'Authorization':'Bearer '+s } });
+    await api('/api/painel', { method:'GET', headers:{ 'Authorization':'Bearer '+s } });
     adminLogado = true; adminSenha = s;
     document.getElementById('login-erro').style.display = 'none';
     document.getElementById('login-senha').value = '';
