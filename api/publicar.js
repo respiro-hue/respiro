@@ -34,14 +34,23 @@ res.setHeader('Vary', 'Origin'); // importante para cache
   );
 
   if (req.method === 'POST') {
-    const { semana, ano, titulo, texto, midia, tipo } = req.body;
+    const { semana, ano, titulo, texto, midia, tipo, musica_vocal, musica_instrumental } = req.body;
     if (!semana || !ano || !titulo || !texto) {
       return res.status(400).json({ error: 'campos obrigatórios ausentes' });
     }
     if (midia && midia.length > 5 * 1024 * 1024) {
       return res.status(400).json({ error: 'imagem muito grande' });
     }
-        const { error } = await sb.from('textos').insert([{ semana, ano, titulo: escapeHtml(titulo), texto: escapeHtml(texto), midia: midia || '', tipo: tipo || 'image' }]);
+    const { error } = await sb.from('textos').insert([{
+      semana,
+      ano,
+      titulo: escapeHtml(titulo),
+      texto: escapeHtml(texto),
+      midia: midia || '',
+      tipo: tipo || 'image',
+      musica_vocal: musica_vocal || '',
+      musica_instrumental: musica_instrumental || ''
+    }]);  
     if (error) return res.status(500).json({ error: error.message });
     return res.status(200).json({ ok: true });
   }
