@@ -259,6 +259,42 @@ hr.sep { border:none; border-top:1px solid #ddd8cc; margin:2.5rem 0; }
   width: 100%;
   border-radius: 8px;
 }
+/* ══ MÍDIA FULLSCREEN (COVER) ══ */
+.leitura-bg {
+  position: fixed; inset: 0; z-index: -2;
+  background-size: cover; background-position: center;
+  background-repeat: no-repeat; background-color: #111;
+  transition: opacity 0.5s;
+}
+.leitura-video-bg {
+  position: fixed; inset: 0; z-index: -2;
+  width: 100%; height: 100%; object-fit: cover;
+  pointer-events: none;
+}
+.leitura-veil {
+  position: fixed; inset: 0; z-index: -1;
+  background: rgba(0,0,0,0.45);
+}
+
+/* ══ BOTÃO X (LIMPAR MÍDIA) ══ */
+.btn-limpar-midia {
+  position: absolute; top: 8px; right: 8px;
+  background: rgba(0,0,0,0.6); color: #fff; border: none;
+  width: 26px; height: 26px; border-radius: 50%;
+  cursor: pointer; font-size: 14px; line-height: 26px;
+  display: none; z-index: 2;
+}
+.campo { position: relative; }
+
+/* ══ BOTÃO COMPARTILHAR ══ */
+.btn-compartilhar {
+  background: transparent; border: 1px solid currentColor;
+  color: inherit; padding: 6px 12px; border-radius: 20px;
+  cursor: pointer; font-size: 0.85rem; opacity: 0.8;
+  transition: opacity 0.2s;
+}
+.btn-compartilhar:hover { opacity: 1; }
+
 </style>
 </head>
 <body>
@@ -351,7 +387,8 @@ hr.sep { border:none; border-top:1px solid #ddd8cc; margin:2.5rem 0; }
         <button class="btn-fonte" onclick="ajustarFonte(1)">A+</button>
       </div>
       <button class="leitura-nav-voltar" onclick="fecharLeitura()">voltar</button>
-    </div>
+      <button class="leitura-nav-btn" onclick="compartilharTexto()">↗ compartilhar</button>
+   </div>
     <button class="leitura-nav-btn" id="nav-proximo" onclick="navegarLeitura(1)" style="justify-content:flex-end"><span>próximo</span> &#8594;</button>
   </div>
   <div class="leitura-corpo">
@@ -393,6 +430,9 @@ hr.sep { border:none; border-top:1px solid #ddd8cc; margin:2.5rem 0; }
       <label>mídia da semana (imagem ou vídeo curto)</label>
       <label class="file-label"><input type="file" id="a-midia" accept="image/*,video/*" onchange="prevMidia(this)"><span id="a-file-nome">escolher arquivo...</span></label>
       <img class="preview-img" id="prev-img" alt=""><video class="preview-vid" id="prev-vid" muted loop playsinline></video>
+          <img class="preview-img" id="prev-img" alt="">
+      <video class="preview-vid" id="prev-vid" muted loop playsinline></video>
+      <button class="btn-limpar-midia" id="btn-limpar-midia" onclick="limparMidia()">✕</button>
     </div>
 
         <!-- NOVOS CAMPOS DE MÚSICA -->
@@ -513,8 +553,24 @@ function renderLeitura() {
   document.getElementById('leitura-semana').textContent = 'semana '+t.semana+' · '+t.ano;
   document.getElementById('leitura-titulo').textContent = t.titulo;
   document.getElementById('leitura-texto').textContent = t.texto;
-  document.getElementById('leitura-bg').style.backgroundImage = (t.midia&&t.tipo==='image')?"url('"+t.midia+"')":'none';
-  const primeiro = idx===0, ultimo = idx===textosCache.length-1;
+    const bgEl = document.getElementById('leitura-bg');
+    const oldVid = document.querySelector('.leitura-video-bg');
+    if (oldVid) oldVid.remove();
+
+    if (t.midia) {
+      if (t.tipo === 'image') {
+        bgEl.style.backgroundImage = `url("${t.midia}")`;
+        bgEl.style.display = 'block';
+      } else {
+        bgEl.style.display = 'none';
+        const vid = document.createElement('video');
+        vid.src = t.midia; vid.className = 'leitura-video-bg';
+        vid.autoplay = true; vid.muted = true; vid.loop = true; vid.playsInline = true;
+        document.getElementById('view-leitura').appendChild(vid);
+      }
+    } else {
+      bgEl.style.display = 'none'; bgEl.style.backgroundImage = 'none';
+    }  const primeiro = idx===0, ultimo = idx===textosCache.length-1;
   ['nav-anterior','rodape-anterior'].forEach(function(id){ document.getElementById(id).classList.toggle('disabled',primeiro); });
   ['nav-proximo','rodape-proximo'].forEach(function(id){ document.getElementById(id).classList.toggle('disabled',ultimo); });
 mostrarPlayerMusica();
@@ -778,6 +834,46 @@ function fecharMusica() {
   if (playerDiv) {
     playerDiv.style.display = 'none';
     document.getElementById('music-player').innerHTML = '';
+  }
+}
+/* ══ LIMPAR MÍDIA (BOTÃO X) ══ */
+function limparMidia() {
+  document.getElementById('a-midia').value = '';
+  document.getElementById('prev-img').style.display = 'none';
+  document.getElementById('prev-vid').style.display = 'none';
+  document.getElementById('a-file-nome').textContent = 'escolher arquivo...';
+  document.getElementById('btn-limpar-midia').style.display = 'none';
+}
+
+// Atualizar prevMidia para mostrar o botão X quando escolher arquivo
+const prevMidiaOriginal = window.prevMidia || function(inp) {
+  const f = inp.files[0]; if (!f) return;
+  const url = URL.createObjectURL(f);
+  const isVid = f.type.startsWith('video');
+  
+  document.getElementById('prev-img').style.display = isVid ? 'none' : 'block';
+  document.getElementById('prev-vid').style.display = isVid ? 'block' : 'none';
+  
+  if (isVid) { document.getElementById('prev-vid').src = url; document.getElementById('prev-vid').play(); }
+  else { document.getElementById('prev-img').src = url; }
+  
+  document.getElementById('a-file-nome').textContent = f.name;
+  document.getElementById('btn-limpar-midia').style.display = 'block'; // Mostra o X
+};
+window.prevMidia = prevMidiaOriginal;
+
+/* ══ COMPARTILHAR ══ */
+async function compartilharTexto() {
+  const t = textosCache[idx]; if (!t) return;
+  // Cria o link direto para a semana
+  const url = window.location.href.split('#')[0] + '#semana-' + t.semana.padStart(2,'0');
+  
+  if (navigator.share) {
+    try { await navigator.share({ title: t.titulo, text: `Leia: ${t.titulo}`, url }); }
+    catch(e) { console.log('Compartilhamento cancelado'); }
+  } else {
+    // Fallback para PC: copia o link
+    navigator.clipboard.writeText(`${t.titulo}\n${url}`).then(() => alert('Link copiado!'));
   }
 }
 </script>
