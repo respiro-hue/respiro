@@ -294,7 +294,34 @@ hr.sep { border:none; border-top:1px solid #ddd8cc; margin:2.5rem 0; }
   transition: opacity 0.2s;
 }
 .btn-compartilhar:hover { opacity: 1; }
+/* ══ ABAS DO ADMIN ══ */
+.admin-tabs {
+  display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 10px;
+}
+.tab-btn {
+  background: none; border: 1px solid transparent; padding: 8px 16px; cursor: pointer;
+  font-size: 0.9rem; color: #666; border-radius: 6px; transition: all 0.2s;
+}
+.tab-btn:hover { background: #f0f0f0; }
+.tab-btn.active {
+  background: #333; color: #fff; border-color: #333;
+}
+.tab-content { display: none; }
+.tab-content.active { display: block; }
 
+/* ══ LISTA DE TEXTOS (LIXEIRA) ══ */
+.admin-text-list { margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px; }
+.admin-text-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px; border: 1px solid #eee; margin-bottom: 5px; border-radius: 6px;
+  background: #fff; font-size: 0.85rem;
+}
+.btn-delete {
+  background: #ffe5e5; color: #d32f2f; border: none; padding: 4px 8px;
+  border-radius: 4px; cursor: pointer; font-size: 0.8rem;
+}
+.btn-delete:hover { background: #d32f2f; color: #fff; }
+  
 </style>
 </head>
 <body>
@@ -424,6 +451,14 @@ hr.sep { border:none; border-top:1px solid #ddd8cc; margin:2.5rem 0; }
   <div class="admin-wrap">
     <div class="admin-logo">respiro</div>
     <div class="admin-sub">painel de publicação</div>
+        <!-- BARRA DE ABAS -->
+    <div class="admin-tabs">
+      <button class="tab-btn active" onclick="mudarAba('tab-publicar', this)">📝 Publicar</button>
+      <button class="tab-btn" onclick="mudarAba('tab-mensagens', this)">💬 Mensagens</button>
+      <button class="tab-btn" onclick="mudarAba('tab-emails', this)">📧 Emails</button>
+    </div>
+    
+    <div id="tab-publicar" class="tab-content active">
     <div class="campo"><label>título do texto</label><input type="text" id="a-titulo" placeholder="como eu chamo este texto..."></div>
     <div class="campo"><label>texto completo</label><textarea id="a-texto" placeholder="escreva aqui..."></textarea></div>
     <div class="campo">
@@ -449,11 +484,22 @@ hr.sep { border:none; border-top:1px solid #ddd8cc; margin:2.5rem 0; }
     <button class="btn-publicar" id="btn-publicar" onclick="publicar()">publicar esta semana</button>
     <p class="admin-status" id="a-status"></p>
     <hr class="sep">
+    <div class="admin-text-list">
+     <div class="msgs-titulo">textos publicados (para excluir)</div>
+     <div id="lista-textos-admin" style="margin-top: 10px;"></div>
+  </div>
+  </div>
+</div>
+  <div id="tab-mensagens" class="tab-content">
+    <hr class="sep">
     <div class="msgs-titulo">mensagens recebidas</div>
     <div id="a-msgs"></div>
+    </div>
+  <div id="tab-emails" class="tab-content">
     <hr class="sep">
     <div class="msgs-titulo">emails captados</div>
     <div id="a-emails"></div>
+    </div>
     <button class="btn-admin-sair" onclick="fecharAdmin()">&#8592; sair</button>
   </div>
 </div>
@@ -876,6 +922,67 @@ async function compartilharTexto() {
     navigator.clipboard.writeText(`${t.titulo}\n${url}`).then(() => alert('Link copiado!'));
   }
 }
+  /* ══ LÓGICA DAS ABAS ══ */
+function mudarAba(tabId, btn) {
+  // Esconde todas as abas
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  
+  // Mostra a selecionada
+  document.getElementById(tabId).classList.add('active');
+  btn.classList.add('active');
+  
+  // Se abrir a aba de publicar, atualiza a lista de textos
+  if (tabId === 'tab-publicar') carregarListaTextosAdmin();
+}
+
+/* ══ LIXEIRA (CARREGAR LISTA) ══ */
+async function carregarListaTextosAdmin() {
+  const container = document.getElementById('lista-textos-admin');
+  if (!container) return;
+  
+  try {
+    const res = await fetch('/api/painel', { headers: authHeader() });
+    const data = await res.json();
+    
+    if (data.msgs) {
+      container.innerHTML = '';
+      // Mostra os mais recentes primeiro
+      data.msgs.reverse().forEach(t => {
+        const div = document.createElement('div');
+        div.className = 'admin-text-item';
+        div.innerHTML = `
+          <span><strong>Sem ${t.semana}:</strong> ${t.titulo}</span>
+          <button class="btn-delete" onclick="excluirTexto(${t.id}, '${t.titulo.replace(/'/g, "\\'")}')">🗑️ Excluir</button>
+        `;
+        container.appendChild(div);
+      });
+    }
+  } catch (e) { console.error('Erro ao carregar lista:', e); }
+}
+
+/* ══ LIXEIRA (EXCLUIR TEXTO) ══ */
+async function excluirTexto(id, titulo) {
+  if (!confirm(`Tem certeza que deseja excluir "${titulo}"? Esta ação não pode ser desfeita.`)) return;
+  
+  try {
+    const res = await fetch('/api/publicar', {
+      method: 'DELETE',
+      headers: authHeader(),
+      body: JSON.stringify({ id })
+    });
+    
+    if (res.ok) {
+      alert('Texto excluído com sucesso!');
+      carregarListaTextosAdmin(); // Atualiza a lista automaticamente
+    } else {
+      alert('Erro ao excluir.');
+    }
+  } catch (e) { alert('Erro de conexão.'); }
+}
+
+// Carrega a lista assim que o admin abre
+if (document.getElementById('lista-textos-admin')) carregarListaTextosAdmin();
 </script>
 <!-- deploy test: The + Qwen -->
 </body>
