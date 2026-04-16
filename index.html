@@ -754,8 +754,8 @@ async function publicar() {
           ano: new Date().getFullYear().toString(),
           titulo,
           texto,
-          midia: midiaFinal || '',
-          tipo: tipoFinal || 'image',
+          midia: midia,    // ← usa o parâmetro recebido
+          tipo: tipo,      // ← usa o parâmetro recebido
           // 👇 novos campos de música 👇
           musica_vocal: document.getElementById('a-musica-vocal').value.trim(),
           musica_instrumental: document.getElementById('a-musica-inst').value.trim()
@@ -781,7 +781,7 @@ async function publicar() {
     const r = new FileReader();
     r.onload = function(e){ salvar(e.target.result, tipo); };
     r.readAsDataURL(file);
-  } else { salvar('', 'image'); }
+} else { salvar(midiaFinal, tipoFinal); }  // ← passa as variáveis de URL
 }
 
 async function renderAdmin() {
