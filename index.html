@@ -730,21 +730,22 @@ async function publicar() {
   const fi     = document.getElementById('a-midia');
   const st     = document.getElementById('a-status');
   const btn    = document.getElementById('btn-publicar');
-  if (!titulo||!texto||!sem){ st.textContent='preencha título, texto e semana.'; st.className='admin-status err'; return; }
-  // --- NOVA LÓGICA: LINK OU ARQUIVO ---
-  const urlMidia = document.getElementById('a-midia-url').value.trim();
-  let midiaFinal = '';
-  let tipoFinal = 'image';
-
-  if (urlMidia) {
-    midiaFinal = urlMidia;
-    if (urlMidia.includes('youtube') || urlMidia.includes('youtu.be') || urlMidia.includes('vimeo')) {
-      tipoFinal = 'video';
-    }
+  
+  // Validação básica
+  if (!titulo||!texto||!sem) { 
+    st.textContent='preencha título, texto e semana.'; 
+    st.className='admin-status err'; 
+    return; 
   }
-  // --- FIM NOVA LÓGICA ---
-  async function salvar(midia, tipo) {
-    btn.disabled = true; btn.textContent = 'publicando...';
+  
+  // Pegar URL da mídia (se houver)
+  const urlMidia = document.getElementById('a-midia-url').value.trim();
+  
+  // Função interna para salvar
+  async function salvar(midiaBase64, tipoMidia) {
+    btn.disabled = true; 
+    btn.textContent = 'publicando...';
+    
     try {
       await api('/api/publicar', {
         method: 'POST',
@@ -752,36 +753,78 @@ async function publicar() {
         body: {
           semana: sem.padStart(2,'0'),
           ano: new Date().getFullYear().toString(),
-          titulo,
-          texto,
-          midia: midia,    // ← usa o parâmetro recebido
-          tipo: tipo,      // ← usa o parâmetro recebido
-          // 👇 novos campos de música 👇
+          titulo: titulo,
+          texto: texto,
+          midia: midiaBase64 || '',
+          tipo: tipoMidia || 'image',
           musica_vocal: document.getElementById('a-musica-vocal').value.trim(),
           musica_instrumental: document.getElementById('a-musica-inst').value.trim()
         }
       });
-      ['a-titulo','a-texto','a-semana'].forEach(function(id){document.getElementById(id).value='';});
+      
+      // Limpar campos
+      ['a-titulo','a-texto','a-semana'].forEach(function(id){
+        document.getElementById(id).value='';
+      });
       document.getElementById('a-file-nome').textContent = 'escolher arquivo...';
       document.getElementById('prev-img').style.display = 'none';
       document.getElementById('prev-vid').style.display = 'none';
+      document.getElementById('a-midia-url').value = ''; // Limpar URL também
       fi.value = '';
-      st.textContent = '✓ publicado com sucesso.'; st.className = 'admin-status ok';
-      await renderHero(); renderAdmin();
+      
+      st.textContent = '✓ publicado com sucesso.'; 
+      st.className = 'admin-status ok';
+      
+      await renderHero(); 
+      renderAdmin();
     } catch(e) {
-      st.textContent = 'erro ao publicar. tente novamente.'; st.className = 'admin-status err';
+      console.error('Erro ao publicar:', e);
+      st.textContent = 'erro ao publicar. tente novamente.'; 
+      st.className = 'admin-status err';
     }
-    btn.disabled = false; btn.textContent = 'publicar esta semana';
+    
+    btn.disabled = false; 
+    btn.textContent = 'publicar esta semana';
   }
 
-  if (fi.files[0]) {
+  // Lógica principal: URL tem prioridade sobre arquivo
+  if (urlMidia) {
+    // Usar URL do YouTube/Vimeo
+    let tipo = 'image';
+    if (urlMidia.includes('youtube.com') || urlMidia.includes('youtu.be') || urlMidia.includes('vimeo')) {
+      tipo = 'video';
+    }
+    await salvar(urlMidia, tipo);
+    
+  } else if (fi.files[0]) {
+    // Usar arquivo upload
     const file = fi.files[0];
-    if (file.size > 4*1024*1024){ st.textContent='arquivo muito grande (máx 4 MB).'; st.className='admin-status err'; return; }
-    const tipo = file.type.startsWith('image')?'image':'video';
-    const r = new FileReader();
-    r.onload = function(e){ salvar(e.target.result, tipo); };
-    r.readAsDataURL(file);
-} else { salvar(midiaFinal, tipoFinal); }  // ← passa as variáveis de URL
+    
+    // Verificar tamanho (5MB max)
+    if (file.size > 5*1024*1024) { 
+      st.textContent='arquivo muito grande (máx 5 MB).'; 
+      st.className='admin-status err'; 
+      return; 
+    }
+    
+    // Detectar tipo
+    const tipo = file.type.startsWith('video') ? 'video' : 'image';
+    
+    // Ler arquivo
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      salvar(e.target.result, tipo);
+    };
+    reader.onerror = function() {
+      st.textContent='erro ao ler arquivo.'; 
+      st.className='admin-status err';
+    };
+    reader.readAsDataURL(file);
+    
+  } else {
+    // Sem mídia (apenas texto)
+    await salvar('', 'image');
+  }
 }
 
 async function renderAdmin() {
