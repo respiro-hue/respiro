@@ -469,7 +469,12 @@ hr.sep { border:none; border-top:1px solid #ddd8cc; margin:2.5rem 0; }
       <video class="preview-vid" id="prev-vid" muted loop playsinline></video>
       <button class="btn-limpar-midia" id="btn-limpar-midia" onclick="limparMidia()">✕</button>
     </div>
-
+    <div class="campo" style="margin-top: 15px; border-top: 1px dashed #ddd; padding-top: 15px;">
+      <label>🔗 OU use link do YouTube/Vimeo (Recomendado para vídeos)</label>
+      <input type="text" id="a-midia-url" placeholder="https://www.youtube.com/watch?v=..." style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+      <small style="color: #888; display: block; margin-top: 5px;">Se colar o link aqui, ele substitui o upload de arquivo.</small>
+    </div>
+      
         <!-- NOVOS CAMPOS DE MÚSICA -->
     <div class="campo">
       <label>🎵 Link Música (Vocal)</label>
@@ -726,7 +731,18 @@ async function publicar() {
   const st     = document.getElementById('a-status');
   const btn    = document.getElementById('btn-publicar');
   if (!titulo||!texto||!sem){ st.textContent='preencha título, texto e semana.'; st.className='admin-status err'; return; }
+  // --- NOVA LÓGICA: LINK OU ARQUIVO ---
+  const urlMidia = document.getElementById('a-midia-url').value.trim();
+  let midiaFinal = '';
+  let tipoFinal = 'image';
 
+  if (urlMidia) {
+    midiaFinal = urlMidia;
+    if (urlMidia.includes('youtube') || urlMidia.includes('youtu.be') || urlMidia.includes('vimeo')) {
+      tipoFinal = 'video';
+    }
+  }
+  // --- FIM NOVA LÓGICA ---
   async function salvar(midia, tipo) {
     btn.disabled = true; btn.textContent = 'publicando...';
     try {
@@ -738,8 +754,8 @@ async function publicar() {
           ano: new Date().getFullYear().toString(),
           titulo,
           texto,
-          midia: midia || '',
-          tipo: tipo || 'image',
+          midiaFinal || '',
+          tipo: tipoFinal || 'image',
           // 👇 novos campos de música 👇
           musica_vocal: document.getElementById('a-musica-vocal').value.trim(),
           musica_instrumental: document.getElementById('a-musica-inst').value.trim()
