@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>respiro</title>
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --serif: Georgia, 'Times New Roman', serif;
+  --sans: system-ui, -apple-system, sans-serif;
+  --areia: #f5f0e8; --areia2: #ede7d8;
+  --text-dark: #1a1a18; --text-soft: #8a8a80;
+}
+html { scroll-behavior: smooth; }
+body { width:100%; font-family:var(--sans); background:#111; overflow-x:hidden; -webkit-overflow-scrolling:touch; }
+
+/* ══ NAV ══ */
+nav { position:fixed; top:0; left:0; right:0; z-index:200; display:flex; align-items:center; justify-content:space-between; padding:1.4rem 2.5rem; background:linear-gradient(to bottom,rgba(0,0,0,0.55) 0%,transparent 100%); pointer-events:none; }
+nav * { pointer-events:all; }
+.logo { font-family:var(--serif); font-style:italic; font-size:1.45rem; color:#fff; cursor:pointer; letter-spacing:0.02em; text-decoration:none; transition:opacity 0.2s; }
+.logo:hover { opacity:0.75; }
+
+/* ══ HERO ══ */
+#hero { position:relative; height:100svh; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+.hero-bg { position:absolute; inset:0; z-index:0; background-color:#151910; background-size:cover; background-position:center; filter:blur(8px) brightness(0.42); transform:scale(1.06); transition:opacity 0.4s ease; }
+.hero-veil { position:absolute; inset:0; z-index:1; background:rgba(0,0,0,0.32); }
+.hero-content { position:relative; z-index:2; display:flex; flex-direction:column; align-items:center; text-align:center; max-width:660px; padding:0 1.5rem; width:100%; }
+@keyframes heroIn { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+.hero-semana { font-size:0.68rem; letter-spacing:0.24em; text-transform:uppercase; color:rgba(255,255,255,0.48); margin-bottom:1.6rem; animation:heroIn 1.2s 0.15s ease both; }
+.hero-titulo { font-family:var(--serif); font-style:italic; font-weight:400; font-size:clamp(1.9rem,5.5vw,3.6rem); color:#fff; line-height:1.18; margin-bottom:1.6rem; animation:heroIn 1.2s 0.25s ease both; }
+.hero-trecho { font-size:clamp(0.88rem,2vw,1rem); color:rgba(255,255,255,0.68); line-height:1.9; font-style:italic; margin-bottom:2.8rem; max-width:520px; animation:heroIn 1.2s 0.35s ease both; }
+.btn-ler { padding:0.78rem 2.8rem; border:1px solid rgba(255,255,255,0.42); color:#fff; font-size:0.72rem; letter-spacing:0.2em; text-transform:uppercase; background:transparent; cursor:pointer; transition:background 0.25s,border-color 0.25s; min-height:44px; animation:heroIn 1.2s 0.45s ease both; }
+.btn-ler:hover { background:rgba(255,255,255,0.1); border-color:rgba(255,255,255,0.75); }
+
+.semanas-nav { position:fixed; right:1.4rem; top:50%; transform:translateY(-50%); z-index:150; display:flex; flex-direction:column; gap:10px; }
+.dot { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.28); cursor:pointer; transition:all 0.22s; padding:6px; margin:-6px; }
+.dot.active { background:#fff; transform:scale(1.5); }
+
+.btn-som { position:fixed; bottom:1.6rem; left:1.6rem; z-index:150; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.65); font-size:0.66rem; letter-spacing:0.12em; text-transform:uppercase; padding:0.55rem 1rem; cursor:pointer; transition:all 0.22s; border-radius:2px; display:flex; align-items:center; gap:7px; min-height:44px; }
+.btn-som:hover { background:rgba(255,255,255,0.16); color:#fff; }
+.btn-som.on { color:#fff; border-color:rgba(255,255,255,0.5); }
+@keyframes pulse { 0%,100%{opacity:.45} 50%{opacity:1} }
+.som-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; background:#7abf8a; animation:pulse 1.6s ease infinite; }
+
+.som-menu { position:fixed; bottom:4.8rem; left:1.6rem; z-index:149; background:rgba(10,10,8,0.96); border:1px solid rgba(255,255,255,0.12); border-radius:3px; padding:0.5rem 0; min-width:190px; display:none; flex-direction:column; backdrop-filter:blur(12px); box-shadow:0 8px 32px rgba(0,0,0,0.5); }
+@keyframes menuUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+.som-menu.open { display:flex; animation:menuUp 0.18s ease; }
+.som-opcao { display:flex; align-items:center; gap:10px; padding:0.7rem 1rem; background:none; border:none; color:rgba(255,255,255,0.55); font-size:0.66rem; letter-spacing:0.12em; text-transform:uppercase; cursor:pointer; transition:color 0.15s; text-align:left; width:100%; min-height:44px; }
+.som-opcao:hover { color:rgba(255,255,255,0.9); background:rgba(255,255,255,0.04); }
+.som-opcao.ativo { color:#fff; }
+.som-opcao .opcao-icon { font-size:0.95rem; flex-shrink:0; width:18px; text-align:center; }
+.som-opcao .opcao-barra { margin-left:auto; display:flex; gap:2px; align-items:flex-end; height:12px; }
+.som-opcao.ativo .opcao-barra span { display:block; width:3px; background:#7abf8a; border-radius:1px; animation:barUp 0.9s ease infinite alternate; }
+.som-opcao.ativo .opcao-barra span:nth-child(1){height:5px;animation-delay:0s}
+.som-opcao.ativo .opcao-barra span:nth-child(2){height:9px;animation-delay:0.2s}
+.som-opcao.ativo .opcao-barra span:nth-child(3){height:6px;animation-delay:0.4s}
+@keyframes barUp { from{transform:scaleY(0.4)} to{transform:scaleY(1)} }
+.som-sep { height:1px; background:rgba(255,255,255,0.07); margin:0.2rem 0; }
+
+.hero-scroll-hint { position:absolute; bottom:2.2rem; left:50%; transform:translateX(-50%); z-index:2; display:flex; flex-direction:column; align-items:center; gap:6px; color:rgba(255,255,255,0.3); font-size:0.6rem; letter-spacing:0.2em; text-transform:uppercase; cursor:pointer; animation:fadeHint 3s ease 2s both; }
+@keyframes fadeHint { from{opacity:0;transform:translateX(-50%) translateY(8px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
+.hero-scroll-hint svg { animation:bounce 2s ease infinite; }
+@keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(5px)} }
+
+/* ══ LEITURA ══ */
+#view-leitura { display:none; position:fixed; inset:0; z-index:300; overflow-y:scroll; -webkit-overflow-scrolling:touch; scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.15) transparent; }
+#view-leitura::-webkit-scrollbar { width:4px; }
+#view-leitura::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.15); border-radius:2px; }
+#view-leitura.open { display:block; animation:leituraIn 0.35s ease; }
+@keyframes leituraIn { from{opacity:0} to{opacity:1} }
+
+.leitura-progresso { position:fixed; top:0; left:0; z-index:320; height:2px; background:rgba(255,255,255,0.35); width:0%; transition:width 0.1s linear; pointer-events:none; }
+.leitura-nav { position:sticky; top:0; z-index:310; display:flex; align-items:center; justify-content:space-between; padding:1rem 1.5rem; background:linear-gradient(to bottom,rgba(0,0,0,0.82) 0%,rgba(0,0,0,0.4) 70%,transparent 100%); pointer-events:none; }
+.leitura-nav * { pointer-events:all; }
+.leitura-nav-btn { background:none; border:none; color:rgba(255,255,255,0.5); font-size:0.66rem; letter-spacing:0.14em; text-transform:uppercase; cursor:pointer; transition:color 0.2s; display:flex; align-items:center; gap:6px; padding:0.6rem 0.4rem; min-height:44px; min-width:44px; }
+.leitura-nav-btn:hover { color:rgba(255,255,255,0.9); }
+.leitura-nav-btn.disabled { opacity:0.18; pointer-events:none; }
+.leitura-nav-centro { display:flex; align-items:center; gap:0.8rem; }
+.leitura-nav-voltar { background:none; border:1px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); font-size:0.62rem; letter-spacing:0.16em; text-transform:uppercase; padding:0.45rem 1.1rem; cursor:pointer; border-radius:2px; transition:all 0.2s; min-height:36px; font-family:var(--sans); }
+.leitura-nav-voltar:hover { border-color:rgba(255,255,255,0.55); color:#fff; }
+.leitura-fonte-ctrl { display:flex; align-items:center; gap:4px; }
+.btn-fonte { background:none; border:1px solid rgba(255,255,255,0.18); color:rgba(255,255,255,0.45); font-size:0.72rem; width:28px; height:28px; display:flex; align-items:center; justify-content:center; cursor:pointer; border-radius:2px; transition:all 0.2s; }
+.btn-fonte:hover { border-color:rgba(255,255,255,0.45); color:#fff; }
+
+.leitura-bg { position:fixed; inset:0; z-index:-1; background-color:#111; background-size:cover; background-position:center; filter:blur(14px) brightness(0.3); transform:scale(1.1); transition:background-image 0.7s ease; }
+.leitura-veil { position:fixed; inset:0; z-index:-1; background:rgba(0,0,0,0.52); }
+.leitura-corpo { max-width:580px; margin:0 auto; padding:1rem 1.5rem 6rem; }
+.leitura-semana { font-size:0.66rem; letter-spacing:0.24em; text-transform:uppercase; color:rgba(255,255,255,0.35); margin-bottom:1rem; }
+.leitura-titulo { font-family:var(--serif); font-style:italic; font-weight:400; font-size:clamp(1.6rem,4vw,2.8rem); color:#fff; line-height:1.22; margin-bottom:2.8rem; }
+.leitura-sep { width:36px; height:1px; background:rgba(255,255,255,0.2); margin-bottom:2.8rem; }
+.leitura-texto { line-height:2.05; color:rgba(255,255,255,0.8); white-space:pre-wrap; transition:font-size 0.2s; }
+.leitura-texto.f-sm { font-size:0.92rem; }
+.leitura-texto.f-md { font-size:1.05rem; }
+.leitura-texto.f-lg { font-size:1.2rem; }
+.leitura-texto.f-xl { font-size:1.38rem; }
+
+.leitura-musica { margin:2.5rem 0; }
+.leitura-musica-label { font-size:0.64rem; letter-spacing:0.2em; text-transform:uppercase; color:rgba(255,255,255,0.25); margin-bottom:0.8rem; display:block; }
+.musica-btn { background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.6); padding:0.6rem 1.2rem; margin-right:0.5rem; font-size:0.66rem; letter-spacing:0.12em; text-transform:uppercase; cursor:pointer; border-radius:2px; transition:all 0.2s; min-height:36px; }
+.musica-btn:hover { background:rgba(255,255,255,0.12); color:#fff; }
+.musica-btn.ativo { background:rgba(122,191,138,0.2); border-color:#7abf8a; color:#7abf8a; }
+
+.leitura-compartilhar { display:inline-flex; align-items:center; gap:8px; margin-top:2.5rem; background:none; border:none; color:rgba(255,255,255,0.28); font-size:0.64rem; letter-spacing:0.16em; text-transform:uppercase; cursor:pointer; transition:color 0.2s; font-family:var(--sans); padding:0.4rem 0; }
+.leitura-compartilhar:hover { color:rgba(255,255,255,0.7); }
+.compartilhar-ok { color:#7abf8a !important; }
+
+.leitura-rodape { display:flex; align-items:center; justify-content:space-between; margin-top:3rem; padding-top:2rem; border-top:1px solid rgba(255,255,255,0.08); gap:1rem; }
+.leitura-rodape-btn { background:none; border:none; color:rgba(255,255,255,0.35); font-size:0.68rem; letter-spacing:0.14em; text-transform:uppercase; cursor:pointer; transition:color 0.2s; display:flex; align-items:center; gap:6px; font-family:var(--sans); padding:0.5rem 0; min-height:44px; flex:1; }
+.leitura-rodape-btn:last-child { justify-content:flex-end; }
+.leitura-rodape-btn:hover { color:rgba(255,255,255,0.8); }
+.leitura-rodape-btn.disabled { opacity:0.18; pointer-events:none; }
+.leitura-rodape-fechar { background:none; border:1px solid rgba(255,255,255,0.22); color:rgba(255,255,255,0.5); font-size:0.66rem; letter-spacing:0.16em; text-transform:uppercase; padding:0.55rem 1.3rem; cursor:pointer; border-radius:2px; transition:all 0.2s; font-family:var(--sans); flex-shrink:0; min-height:44px; }
+.leitura-rodape-fechar:hover { border-color:rgba(255,255,255,0.5); color:#fff; }
+
+/* ══ ARQUIVO ══ */
+#arquivo { background:var(--areia); padding-top:5rem; }
+.arquivo-topo { padding:3rem 1.5rem 2.5rem; text-align:center; }
+.arquivo-label { font-size:0.68rem; letter-spacing:0.22em; text-transform:uppercase; color:var(--text-soft); margin-bottom:0.6rem; }
+.arquivo-titulo { font-family:var(--serif); font-style:italic; font-weight:400; font-size:clamp(1.5rem,3vw,2rem); color:var(--text-dark); margin-bottom:0.5rem; }
+.arquivo-sub { font-size:0.7rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--text-soft); }
+.arquivo-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:1px; background:#c8c2b4; }
+.arquivo-card { position:relative; overflow:hidden; cursor:pointer; aspect-ratio:3/4; background:var(--areia2); }
+.arquivo-card-bg { position:absolute; inset:0; background-size:cover; background-position:center; background-color:#2a2820; filter:brightness(0.58); transition:transform 0.4s ease,filter 0.3s; }
+.arquivo-card:hover .arquivo-card-bg { transform:scale(1.04); filter:brightness(0.46); }
+.arquivo-card-info { position:absolute; bottom:0; left:0; right:0; padding:2rem 1rem 1rem; background:linear-gradient(to top,rgba(0,0,0,0.78),transparent); color:#fff; }
+.arquivo-semana-num { font-size:0.6rem; letter-spacing:0.2em; text-transform:uppercase; opacity:0.55; }
+.arquivo-card-titulo { font-family:var(--serif); font-style:italic; font-size:1rem; margin-top:0.3rem; line-height:1.3; }
+.arquivo-loading { text-align:center; padding:4rem 1.5rem; font-size:0.75rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--text-soft); }
+
+/* ══ MENSAGEM ══ */
+#mensagem { background:#0c0c0a; min-height:100svh; display:flex; align-items:flex-start; justify-content:center; padding:max(5rem,12vh) 1.5rem 4rem; }
+.msg-box { max-width:500px; width:100%; }
+.msg-titulo { font-family:var(--serif); font-style:italic; font-size:clamp(1.4rem,4vw,1.9rem); color:rgba(255,255,255,0.88); margin-bottom:0.5rem; }
+.msg-sub { font-size:0.76rem; color:rgba(255,255,255,0.3); letter-spacing:0.07em; margin-bottom:2rem; line-height:1.6; }
+.msg-textarea { width:100%; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); color:rgba(255,255,255,0.82); padding:1.2rem; font-size:max(1rem,16px); font-family:var(--serif); font-style:italic; line-height:1.75; resize:none; height:145px; border-radius:2px; outline:none; transition:border-color 0.2s; }
+.msg-textarea:focus { border-color:rgba(255,255,255,0.26); }
+.msg-textarea::placeholder { color:rgba(255,255,255,0.17); }
+.msg-count { text-align:right; font-size:0.68rem; color:rgba(255,255,255,0.2); margin-top:0.4rem; }
+.msg-email-wrap { margin-top:1.2rem; }
+.msg-email-label { font-size:0.64rem; letter-spacing:0.14em; text-transform:uppercase; color:rgba(255,255,255,0.25); margin-bottom:0.5rem; display:block; }
+.msg-email-input { width:100%; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); color:rgba(255,255,255,0.7); padding:0.7rem 1rem; font-size:max(0.9rem,16px); font-family:var(--sans); border-radius:2px; outline:none; transition:border-color 0.2s; }
+.msg-email-input:focus { border-color:rgba(255,255,255,0.26); }
+.msg-email-input::placeholder { color:rgba(255,255,255,0.2); }
+.msg-email-note { font-size:0.62rem; color:rgba(255,255,255,0.18); margin-top:0.5rem; line-height:1.5; }
+.btn-enviar { margin-top:1.5rem; width:100%; padding:0.88rem; background:transparent; border:1px solid rgba(255,255,255,0.26); color:rgba(255,255,255,0.6); font-size:0.72rem; letter-spacing:0.2em; text-transform:uppercase; cursor:pointer; transition:all 0.25s; min-height:48px; }
+.btn-enviar:hover { background:rgba(255,255,255,0.07); color:#fff; border-color:rgba(255,255,255,0.52); }
+.btn-enviar:disabled { opacity:0.4; cursor:default; }
+.msg-ok { display:none; text-align:center; padding:2.5rem 0; }
+.msg-ok p { font-family:var(--serif); font-style:italic; font-size:1.1rem; color:rgba(255,255,255,0.62); line-height:1.85; }
+
+/* ══ RODAPÉ ══ */
+footer { background:#0c0c0a; padding:2rem 1.5rem; text-align:center; border-top:1px solid rgba(255,255,255,0.05); }
+footer span { font-family:var(--serif); font-style:italic; font-size:0.85rem; color:rgba(255,255,255,0.18); letter-spacing:0.08em; }
+
+/* ══ LOGIN/ADMIN ══ */
+.overlay-login { display:none; position:fixed; inset:0; z-index:600; background:var(--areia); align-items:center; justify-content:center; padding:2rem; }
+.overlay-login.open { display:flex; }
+.login-box { max-width:300px; width:100%; text-align:center; }
+.login-logo { font-family:var(--serif); font-style:italic; font-size:1.9rem; color:var(--text-dark); margin-bottom:0.3rem; }
+.login-sub { font-size:0.66rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--text-soft); margin-bottom:2rem; }
+.login-input { width:100%; background:#fff; border:1px solid #ddd8cc; color:var(--text-dark); padding:0.8rem 1rem; font-size:max(1rem,16px); border-radius:2px; outline:none; text-align:center; letter-spacing:0.25em; margin-bottom:1rem; transition:border-color 0.2s; }
+.login-input:focus { border-color:#aaa090; }
+.btn-entrar { width:100%; padding:0.8rem; background:var(--text-dark); color:#fff; border:none; font-size:0.7rem; letter-spacing:0.2em; text-transform:uppercase; cursor:pointer; border-radius:2px; transition:opacity 0.2s; min-height:48px; }
+.btn-entrar:hover { opacity:0.8; }
+.login-erro { font-size:0.75rem; color:#a05040; margin-top:0.7rem; display:none; }
+
+#view-admin { display:none; position:fixed; inset:0; z-index:600; background:var(--areia); overflow-y:auto; -webkit-overflow-scrolling:touch; }
+#view-admin.open { display:block; }
+.admin-wrap { max-width:680px; margin:0 auto; padding:3rem 1.5rem 4rem; }
+.admin-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:2.5rem; }
+.admin-logo { font-family:var(--serif); font-style:italic; font-size:1.5rem; color:var(--text-dark); }
+.btn-admin-sair { background:none; border:none; color:var(--text-soft); font-size:0.68rem; letter-spacing:0.15em; text-transform:uppercase; cursor:pointer; transition:color 0.2s; display:inline-flex; align-items:center; gap:6px; padding:0.5rem 0; min-height:44px; font-family:var(--sans); }
+.btn-admin-sair:hover { color:var(--text-dark); }
+
+.admin-tabs { display:flex; border-bottom:1px solid #ddd8cc; margin-bottom:2rem; gap:0; }
+.admin-tab { background:none; border:none; color:var(--text-soft); font-size:0.72rem; letter-spacing:0.15em; text-transform:uppercase; padding:1rem 1.5rem; cursor:pointer; transition:all 0.2s; border-bottom:2px solid transparent; margin-bottom:-1px; }
+.admin-tab:hover { color:var(--text-dark); }
+.admin-tab.ativo { color:var(--text-dark); border-bottom-color:var(--text-dark); }
+
+.admin-tab-content { display:none; }
+.admin-tab-content.ativo { display:block; }
+
+.campo { margin-bottom:1.8rem; }
+.campo label { display:block; font-size:0.66rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--text-soft); margin-bottom:0.5rem; }
+.campo input,.campo textarea { width:100%; background:#fff; border:1px solid #ddd8cc; color:var(--text-dark); padding:0.75rem 1rem; font-size:max(0.95rem,16px); font-family:var(--serif); border-radius:2px; outline:none; transition:border-color 0.2s; }
+.campo input:focus,.campo textarea:focus { border-color:#aaa090; }
+.campo textarea { resize:vertical; min-height:175px; line-height:1.7; }
+
+.file-label { display:flex; align-items:center; gap:10px; border:1px dashed #c5bdb0; padding:0.9rem 1.1rem; cursor:pointer; color:var(--text-soft); font-size:0.78rem; border-radius:2px; background:#fff; transition:border-color 0.2s; min-height:48px; position:relative; }
+.file-label:hover { border-color:#a09888; }
+.file-label input { display:none; }
+.file-limpar { position:absolute; right:1rem; background:none; border:none; color:var(--text-soft); cursor:pointer; font-size:1.1rem; padding:0.2rem; transition:color 0.2s; }
+.file-limpar:hover { color:#666; }
+.preview-img,.preview-vid { margin-top:0.75rem; width:100%; max-height:145px; object-fit:cover; border-radius:2px; display:none; }
+
+.btn-publicar { width:100%; padding:0.9rem; background:var(--text-dark); color:#fff; border:none; font-size:0.72rem; letter-spacing:0.2em; text-transform:uppercase; cursor:pointer; border-radius:2px; transition:opacity 0.2s; min-height:48px; }
+.btn-publicar:hover { opacity:0.8; }
+.btn-publicar:disabled { opacity:0.4; cursor:default; }
+.admin-status { font-size:0.78rem; margin-top:0.75rem; }
+.ok { color:#4a7a5a; } .err { color:#a05040; }
+
+.msgs-titulo { font-size:0.66rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--text-soft); margin-bottom:1rem; margin-top:2rem; }
+.msg-card { background:#fff; border:1px solid #e5dfd5; border-radius:2px; padding:1rem 1.1rem; margin-bottom:0.75rem; position:relative; }
+.msg-card-txt { font-family:var(--serif); font-style:italic; font-size:0.92rem; color:var(--text-dark); line-height:1.7; margin-bottom:0.35rem; }
+.msg-card-email { font-size:0.64rem; color:var(--text-soft); margin-bottom:0.2rem; }
+.msg-card-data { font-size:0.64rem; color:var(--text-soft); }
+.btn-del { position:absolute; top:0.75rem; right:0.75rem; background:none; border:none; color:#ccc8c0; cursor:pointer; font-size:1rem; padding:0.3rem; transition:color 0.2s; }
+.btn-del:hover { color:#999; }
+.sem-msgs { font-size:0.82rem; color:var(--text-soft); font-style:italic; }
+
+.email-item { display:flex; align-items:center; justify-content:space-between; padding:0.6rem 0; border-bottom:1px solid #ede7d8; font-size:0.82rem; color:var(--text-dark); }
+.email-item:last-child { border-bottom:none; }
+
+/* ══ MOBILE ══ */
+@media (max-width:600px) {
+  nav { padding:1rem 1.2rem; }
+  .semanas-nav { display:none; }
+  .btn-som { left:1rem; bottom:1rem; font-size:0.62rem; padding:0.5rem 0.9rem; }
+  .som-menu { left:1rem; bottom:4.5rem; min-width:175px; }
+  .leitura-corpo { padding:0.5rem 1.2rem 5rem; }
+  .leitura-nav { padding:0.8rem 1rem; }
+  .leitura-nav-btn span { display:none; }
+  .leitura-fonte-ctrl { display:none; }
+  .leitura-rodape { flex-wrap:wrap; gap:0.5rem; }
+  .leitura-rodape-fechar { order:-1; width:100%; text-align:center; }
+  .arquivo-grid { grid-template-columns:repeat(2,1fr); }
+  .admin-tabs { flex-wrap:wrap; }
+  .admin-tab { padding:0.8rem 1rem; font-size:0.65rem; }
+}
+</style>
+</head>
+<body>
+
+<nav><a class="logo" href="#hero">respiro</a></nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg" id="hero-bg"></div>
+  <div class="hero-veil"></div>
+  <div class="hero-content">
+    <p class="hero-semana" id="hero-semana"></p>
+    <h1 class="hero-titulo" id="hero-titulo"></h1>
+    <p class="hero-trecho" id="hero-trecho"></p>
+    <button class="btn-ler" onclick="abrirLeitura(0)">ler o texto completo</button>
+  </div>
+  <div class="semanas-nav" id="semanas-nav"></div>
+  <button class="btn-som" id="btn-som" onclick="toggleMenuSom()">
+    <span id="som-dot-el" style="display:none" class="som-dot"></span>
+    <span id="som-label">som ambiente</span>
+  </button>
+  <div class="som-menu" id="som-menu">
+    <button class="som-opcao" id="op-floresta" onclick="escolherSom('floresta')"><span class="opcao-icon">🌿</span> floresta<span class="opcao-barra"><span></span><span></span><span></span></span></button>
+    <button class="som-opcao" id="op-chuva" onclick="escolherSom('chuva')"><span class="opcao-icon">🌧</span> chuva<span class="opcao-barra"><span></span><span></span><span></span></span></button>
+    <button class="som-opcao" id="op-mar" onclick="escolherSom('mar')"><span class="opcao-icon">🌊</span> mar<span class="opcao-barra"><span></span><span></span><span></span></span></button>
+    <button class="som-opcao" id="op-vento" onclick="escolherSom('vento')"><span class="opcao-icon">🍃</span> vento<span class="opcao-barra"><span></span><span></span><span></span></span></button>
+    <div class="som-sep"></div>
+    <button class="som-opcao" id="op-branco" onclick="escolherSom('branco')"><span class="opcao-icon">〰</span> ruído branco<span class="opcao-barra"><span></span><span></span><span></span></span></button>
+    <button class="som-opcao" id="op-rosa" onclick="escolherSom('rosa')"><span class="opcao-icon">∿</span> ruído rosa<span class="opcao-barra"><span></span><span></span><span></span></span></button>
+    <div class="som-sep"></div>
+    <button class="som-opcao" id="op-desligar" onclick="desligarSom()" style="color:rgba(255,255,255,0.3)"><span class="opcao-icon">○</span> desligar</button>
+  </div>
+  <div class="hero-scroll-hint" onclick="document.getElementById('arquivo').scrollIntoView({behavior:'smooth'})">
+    <svg width="16" height="20" viewBox="0 0 16 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2 L8 16 M3 12 L8 17 L13 12"/></svg>
+  </div>
+</section>
+
+<!-- ARQUIVO -->
+<section id="arquivo">
+  <div class="arquivo-topo">
+    <div class="arquivo-label">respiro</div>
+    <div class="arquivo-titulo">arquivo</div>
+    <div class="arquivo-sub">todos os textos</div>
+  </div>
+  <div class="arquivo-grid" id="arquivo-grid"><div class="arquivo-loading">carregando...</div></div>
+</section>
+
+<!-- MENSAGEM -->
+<section id="mensagem">
+  <div class="msg-box">
+    <h2 class="msg-titulo">o que você carrega hoje?</h2>
+    <p class="msg-sub">sua mensagem chegará só a mim. com cuidado.</p>
+    <div id="msg-form">
+      <textarea class="msg-textarea" id="msg-input" placeholder="hoje eu sinto..." maxlength="300" oninput="contarChars()"></textarea>
+      <div class="msg-count"><span id="msg-chars">0</span>/300</div>
+      <div class="msg-email-wrap">
+        <label class="msg-email-label">quer receber quando eu escrever? (opcional)</label>
+        <input type="email" class="msg-email-input" id="msg-email" placeholder="seu email">
+        <p class="msg-email-note">só texto novo. nada mais. você pode sair quando quiser.</p>
+      </div>
+      <button class="btn-enviar" id="btn-enviar" onclick="enviar()">enviar</button>
+    </div>
+    <div class="msg-ok" id="msg-ok"><p>obrigada por confiar.<br>isso chegou até mim.</p></div>
+  </div>
+</section>
+
+<footer><span>respiro</span></footer>
+
+<!-- LEITURA -->
+<div id="view-leitura">
+  <div class="leitura-progresso" id="leitura-progresso"></div>
+  <div class="leitura-bg" id="leitura-bg"></div>
+  <div class="leitura-veil"></div>
+  <div class="leitura-nav">
+    <button class="leitura-nav-btn" id="nav-anterior" onclick="navegarLeitura(-1)">&#8592; <span>anterior</span></button>
+    <div class="leitura-nav-centro">
+      <div class="leitura-fonte-ctrl">
+        <button class="btn-fonte" onclick="ajustarFonte(-1)">A−</button>
+        <button class="btn-fonte" onclick="ajustarFonte(1)">A+</button>
+      </div>
+      <button class="leitura-nav-voltar" onclick="fecharLeitura()">voltar</button>
+    </div>
+    <button class="leitura-nav-btn" id="nav-proximo" onclick="navegarLeitura(1)" style="justify-content:flex-end"><span>próximo</span> &#8594;</button>
+  </div>
+  <div class="leitura-corpo">
+    <p class="leitura-semana" id="leitura-semana"></p>
+    <h1 class="leitura-titulo" id="leitura-titulo"></h1>
+    <div class="leitura-sep"></div>
+    <p class="leitura-texto f-md" id="leitura-texto"></p>
+    
+    <div class="leitura-musica" id="leitura-musica" style="display:none">
+      <label class="leitura-musica-label">acompanhar com música</label>
+      <button class="musica-btn" id="musica-vocal" onclick="tocarMusica('vocal')">🎵 vocal</button>
+      <button class="musica-btn" id="musica-instrumental" onclick="tocarMusica('instrumental')">🎹 instrumental</button>
+    </div>
+
+    <button class="leitura-compartilhar" id="btn-compartilhar" onclick="compartilhar()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      compartilhar
+    </button>
+    <div class="leitura-rodape">
+      <button class="leitura-rodape-btn" id="rodape-anterior" onclick="navegarLeitura(-1)">&#8592; anterior</button>
+      <button class="leitura-rodape-fechar" onclick="fecharLeitura()">voltar</button>
+      <button class="leitura-rodape-btn" id="rodape-proximo" onclick="navegarLeitura(1)">próximo &#8594;</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div id="view-login" class="overlay-login">
+  <div class="login-box">
+    <div class="login-logo">respiro</div>
+    <div class="login-sub">painel</div>
+    <input type="password" class="login-input" id="login-senha" placeholder="· · · · · ·">
+    <button class="btn-entrar" onclick="loginAdmin()">entrar</button>
+    <p class="login-erro" id="login-erro">senha incorreta</p>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div id="view-admin">
+  <div class="admin-wrap">
+    <div class="admin-header">
+      <div class="admin-logo">respiro</div>
+      <button class="btn-admin-sair" onclick="fecharAdmin()">&#8592; sair</button>
+    </div>
+
+    <div class="admin-tabs">
+      <button class="admin-tab ativo" onclick="abaAdmin('publicar')">📝 publicar</button>
+      <button class="admin-tab" onclick="abaAdmin('mensagens')">💬 mensagens</button>
+      <button class="admin-tab" onclick="abaAdmin('emails')">📧 emails</button>
+    </div>
+
+    <!-- ABA PUBLICAR -->
+    <div id="aba-publicar" class="admin-tab-content ativo">
+      <div class="campo"><label>título do texto</label><input type="text" id="a-titulo" placeholder="como eu chamo este texto..."></div>
+      <div class="campo"><label>texto completo</label><textarea id="a-texto" placeholder="escreva aqui..."></textarea></div>
+      
+      <div class="campo">
+        <label>mídia - escolha uma opção</label>
+        <div style="margin-top:0.8rem;">
+          <label style="display:block;margin-bottom:0.8rem;"><input type="radio" name="tipo-midia" value="upload" onchange="mostrarOpcaoMidia('upload')" checked> Fazer upload de imagem/vídeo</label>
+          <label style="display:block;"><input type="radio" name="tipo-midia" value="url"> URL de vídeo (YouTube/Vimeo)</label>
+        </div>
+      </div>
+
+      <div id="opcao-upload" class="campo">
+        <label>escolher arquivo</label>
+        <label class="file-label">
+          <input type="file" id="a-midia" accept="image/*,video/*" onchange="prevMidia(this)">
+          <span id="a-file-nome">escolher arquivo...</span>
+          <button class="file-limpar" onclick="limparArquivo()" style="display:none" id="btn-limpar">✕</button>
+        </label>
+        <img class="preview-img" id="prev-img" alt="">
+        <video class="preview-vid" id="prev-vid" muted loop playsinline></video>
+      </div>
+
+      <div id="opcao-url" class="campo" style="display:none;">
+        <label>URL do vídeo (YouTube/Vimeo)</label>
+        <input type="url" id="a-url-video" placeholder="https://youtube.com/watch?v=...">
+      </div>
+
+      <div class="campo">
+        <label>música vocal (opcional - URL)</label>
+        <input type="url" id="a-musica-vocal" placeholder="https://...">
+      </div>
+
+      <div class="campo">
+        <label>música instrumental (opcional - URL)</label>
+        <input type="url" id="a-musica-instrumental" placeholder="https://...">
+      </div>
+
+      <div class="campo"><label>número da semana</label><input type="number" id="a-semana" placeholder="ex: 01" min="1" style="width:120px"></div>
+      <button class="btn-publicar" id="btn-publicar" onclick="publicar()">publicar esta semana</button>
+      <p class="admin-status" id="a-status"></p>
+    </div>
+
+    <!-- ABA MENSAGENS -->
+    <div id="aba-mensagens" class="admin-tab-content">
+      <div class="msgs-titulo">mensagens recebidas</div>
+      <div id="a-msgs"></div>
+    </div>
+
+    <!-- ABA EMAILS -->
+    <div id="aba-emails" class="admin-tab-content">
+      <div class="msgs-titulo">emails captados</div>
+      <div id="a-emails"></div>
+    </div>
+  </div>
+</div>
+
+<script src="/api/client.js"></script>
+</body>
+</html>
