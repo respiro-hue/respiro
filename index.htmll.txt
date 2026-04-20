@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>respiro</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>">
+  <meta name="description" content="respiro — palavras para acalmar o dia">
+  <style>
+    :root{--bg:#F5F0E6;--text:#2C2C2C;--soft:#6B6B6B;--border:#D4C5A9;--accent:#3A5F3A;--err:#B91C1C;--ok:#059669;--font:18px Georgia,serif;--max:680px}
+    *{margin:0;padding:0;box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{font:var(--font);background:var(--bg);color:var(--text);line-height:1.7;min-height:100vh}
+    .hidden{display:none!important}.open{display:block!important}
+    nav{position:fixed;top:0;left:0;right:0;padding:16px 24px;background:rgba(245,240,230,0.95);backdrop-filter:blur(4px);border-bottom:1px solid var(--border);z-index:100}
+    .logo{font-size:1.3rem;font-weight:bold;color:var(--accent);text-decoration:none}
+    #hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:100px 24px 60px;position:relative}
+    .hero-bg{position:absolute;inset:0;z-index:-1;background-size:cover;background-position:center;transition:opacity 0.5s}
+    .hero-veil{position:absolute;inset:0;z-index:0;background:rgba(245,240,230,0.8)}
+    .hero-content{max-width:var(--max);z-index:1}
+    .hero-titulo{font-size:2rem;margin-bottom:16px}
+    .hero-texto{color:var(--soft);margin-bottom:32px}
+    .hero-btn{padding:10px 28px;background:var(--accent);color:#fff;border:none;border-radius:6px;cursor:pointer;font:inherit}
+    #view-leitura{display:none;min-height:100vh;padding:80px 24px 100px;position:relative}
+    .leitura-bg{position:fixed;inset:0;z-index:-1;background-size:cover;background-position:center;background-color:#111;transition:opacity 0.5s;display:none}
+    .leitura-video-bg{position:fixed;inset:0;z-index:-1;width:100%;height:100%;object-fit:cover;pointer-events:none}
+    .leitura-veil{position:fixed;inset:0;z-index:0;background:rgba(0,0,0,0.4)}
+    .leitura-corpo{max-width:var(--max);margin:0 auto;z-index:1;position:relative;color:#fff}
+    .leitura-semana{font-size:0.8rem;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px}
+    .leitura-titulo{font-size:1.8rem;margin-bottom:24px;line-height:1.3}
+    .leitura-sep{width:50px;height:2px;background:rgba(255,255,255,0.3);margin:24px 0}
+    .leitura-texto{line-height:1.9;margin-bottom:40px}
+    .leitura-texto p{margin-bottom:16px}
+    .leitura-nav{position:fixed;bottom:0;left:0;right:0;padding:12px 24px;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);display:flex;align-items:center;gap:12px;z-index:100}
+    .nav-btn{background:transparent;border:1px solid rgba(255,255,255,0.3);color:#fff;padding:6px 14px;border-radius:4px;cursor:pointer;font-size:0.85rem}
+    .nav-btn:hover{background:rgba(255,255,255,0.1)}
+    .nav-btn.disabled{opacity:0.3;pointer-events:none}
+    .nav-centro{flex:1;display:flex;justify-content:center;gap:8px}
+    .btn-fonte{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer}
+    .progresso{position:fixed;top:0;left:0;right:0;height:2px;background:rgba(255,255,255,0.1);z-index:101}
+    .progresso-bar{height:100%;background:var(--accent);transition:width 0.1s}
+    #view-admin,#view-login{display:none;min-height:100vh;padding:60px 24px 40px}
+    #view-admin.open,#view-login.open{display:block}
+    .admin-wrap{max-width:520px;margin:0 auto}
+    .admin-logo{font-size:1.5rem;font-weight:bold;color:var(--accent);text-decoration:none;margin-bottom:4px;display:block}
+    .admin-sub{font-size:0.75rem;color:var(--soft);text-transform:uppercase;letter-spacing:2px;margin-bottom:24px}
+    .admin-tabs{display:flex;gap:4px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:8px}
+    .tab-btn{background:none;border:none;padding:6px 12px;cursor:pointer;font-size:0.85rem;color:var(--soft);border-radius:4px}
+    .tab-btn.active{background:var(--accent);color:#fff}
+    .tab-content{display:none}.tab-content.active{display:block}
+    .campo{margin-bottom:16px}
+    .campo label{display:block;font-size:0.7rem;color:var(--soft);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+    .campo input[type="text"],.campo input[type="number"],.campo textarea{width:100%;padding:8px;border:1px solid var(--border);border-radius:4px;font:inherit;background:#fff}
+    .campo textarea{min-height:100px;resize:vertical}
+    .file-label{display:block;padding:10px;border:1px dashed var(--border);border-radius:4px;text-align:center;cursor:pointer;color:var(--soft);font-size:0.85rem}
+    .file-label:hover{background:rgba(0,0,0,0.02)}
+    .campo input[type="file"]{display:none}
+    .preview{max-width:100%;max-height:180px;margin-top:10px;border-radius:4px;display:none}
+    .btn-limpar{position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.5);color:#fff;border:none;width:22px;height:22px;border-radius:50%;cursor:pointer;font-size:12px;display:none;z-index:2}
+    .campo{position:relative}
+    .btn-publicar{width:100%;padding:12px;background:var(--text);color:#fff;border:none;border-radius:4px;cursor:pointer;margin-top:20px;font-size:0.85rem;text-transform:uppercase;letter-spacing:1px}
+    .btn-publicar:hover{background:#111}
+    .btn-publicar:disabled{opacity:0.5;cursor:not-allowed}
+    .status{margin-top:10px;font-size:0.85rem}
+    .status.ok{color:var(--ok)}.status.err{color:var(--err)}
+    .admin-list{margin-top:24px;border-top:1px solid var(--border);padding-top:16px}
+    .list-title{font-size:0.7rem;color:var(--soft);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+    .admin-item{display:flex;justify-content:space-between;align-items:center;padding:8px;border:1px solid var(--border);margin-bottom:4px;border-radius:4px;background:#fff;font-size:0.85rem}
+    .btn-del{background:#fee2e2;color:var(--err);border:none;padding:3px 6px;border-radius:3px;cursor:pointer;font-size:0.75rem}
+    .btn-del:hover{background:var(--err);color:#fff}
+    .msg-card{background:#fff;border:1px solid var(--border);border-radius:4px;padding:10px;margin-bottom:6px}
+    .msg-txt{font-style:italic;margin-bottom:4px}
+    .msg-email{font-size:0.75rem;color:var(--soft)}
+    .msg-data{font-size:0.7rem;color:var(--soft);margin-top:4px}
+    .btn-x{background:none;border:none;color:var(--err);cursor:pointer;float:right;font-size:1rem}
+    .sem{color:var(--soft);font-size:0.85rem;text-align:center;padding:16px}
+    .btn-sair{display:block;margin:24px auto 0;padding:6px 20px;background:none;border:1px solid var(--border);color:var(--soft);border-radius:4px;cursor:pointer;font-size:0.8rem}
+    .login-wrap{max-width:280px;margin:80px auto;text-align:center}
+    .login-titulo{font-size:1.3rem;margin-bottom:20px;color:var(--accent)}
+    .login-input{width:100%;padding:10px;border:1px solid var(--border);border-radius:4px;font:inherit;margin-bottom:12px;text-align:center}
+    .login-btn{width:100%;padding:10px;background:var(--accent);color:#fff;border:none;border-radius:4px;cursor:pointer}
+    .login-err{color:var(--err);font-size:0.8rem;margin-top:10px;display:none}
+    .som-wrap{position:fixed;bottom:60px;right:20px;z-index:99}
+    .btn-som{width:38px;height:38px;border-radius:50%;border:1px solid var(--border);background:rgba(245,240,230,0.95);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem}
+    .btn-som.on{border-color:var(--accent);color:var(--accent)}
+    #som-menu{position:absolute;bottom:44px;right:0;background:#fff;border:1px solid var(--border);border-radius:6px;padding:6px;display:none;min-width:140px;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+    #som-menu.open{display:block}
+    .som-opt{display:block;width:100%;padding:6px 10px;background:none;border:none;text-align:left;cursor:pointer;font-size:0.8rem;color:var(--text);border-radius:3px}
+    .som-opt:hover{background:rgba(0,0,0,0.05)}
+    .som-opt.ativo{background:var(--accent);color:#fff}
+    #leitura-music{position:fixed;bottom:60px;left:20px;z-index:99;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);border-radius:6px;padding:6px;display:none}
+    #music-player{min-width:180px}
+    #music-player iframe{width:100%;border-radius:4px}
+    .music-tabs{display:flex;gap:3px;margin-bottom:4px}
+    .music-tab{flex:1;padding:3px 6px;background:rgba(255,255,255,0.1);border:none;color:#fff;font-size:0.7rem;border-radius:3px;cursor:pointer}
+    .music-tab.active{background:var(--accent)}
+    .btn-close-music{position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:var(--err);color:#fff;border:none;cursor:pointer;font-size:0.65rem}
+    .btn-share{background:transparent;border:1px solid currentColor;color:inherit;padding:4px 10px;border-radius:16px;cursor:pointer;font-size:0.8rem;opacity:0.85}
+    .btn-share:hover{opacity:1}
+    @media(max-width:600px){:root{--font:16px}.hero-titulo{font-size:1.6rem}.leitura-titulo{font-size:1.4rem}.leitura-nav{padding:10px 16px}.som-wrap{bottom:50px;right:16px}#leitura-music{bottom:50px;left:16px}.admin-tabs{flex-wrap:wrap}.tab-btn{flex:1;min-width:70px;font-size:0.8rem}}
+  </style>
+</head>
+<body>
+
+<nav><a class="logo" href="#">respiro</a></nav>
+
+<section id="hero">
+  <div class="hero-bg" id="hero-bg"></div>
+  <div class="hero-veil"></div>
+  <div class="hero-content">
+    <h1 class="hero-titulo" id="hero-titulo"></h1>
+    <p class="hero-texto" id="hero-texto"></p>
+    <button class="hero-btn" id="hero-btn">ler o texto completo</button>
+  </div>
+</section>
+
+<section id="view-leitura">
+  <div class="progresso"><div class="progresso-bar" id="progresso-bar"></div></div>
+  <div class="leitura-bg" id="leitura-bg"></div>
+  <div class="leitura-veil"></div>
+  <div class="leitura-corpo">
+    <p class="leitura-semana" id="leitura-semana"></p>
+    <h1 class="leitura-titulo" id="leitura-titulo"></h1>
+    <div class="leitura-sep"></div>
+    <div class="leitura-texto" id="leitura-texto"></div>
+  </div>
+  <div class="leitura-nav">
+    <button class="nav-btn" id="nav-prev" onclick="nav(-1)">← anterior</button>
+    <div class="nav-centro">
+      <button class="btn-fonte" onclick="font(-1)">A−</button>
+      <button class="btn-fonte" onclick="font(1)">A+</button>
+    </div>
+    <button class="nav-btn" onclick="closeRead()">voltar</button>
+    <button class="btn-share" onclick="share()">↗ compartilhar</button>
+    <button class="nav-btn" id="nav-next" onclick="nav(1)">próximo →</button>
+  </div>
+</section>
+
+<div id="view-admin">
+  <div class="admin-wrap">
+    <a class="admin-logo" href="#">respiro</a>
+    <div class="admin-sub">painel de publicação</div>
+    <div class="admin-tabs">
+      <button class="tab-btn active" onclick="tab('pub',this)">📝 Publicar</button>
+      <button class="tab-btn" onclick="tab('msg',this)">💬 Mensagens</button>
+      <button class="tab-btn" onclick="tab('email',this)">📧 Emails</button>
+    </div>
+    <div id="tab-pub" class="tab-content active">
+      <div class="campo"><label>título do texto</label><input type="text" id="a-titulo"></div>
+      <div class="campo"><label>texto completo</label><textarea id="a-texto"></textarea></div>
+      <div class="campo">
+        <label>mídia da semana</label>
+        <label class="file-label"><input type="file" id="a-midia" accept="image/*,video/*" onchange="prev(this)"><span id="a-name">escolher arquivo...</span></label>
+        <img class="preview" id="prev-img"><video class="preview" id="prev-vid" muted loop playsinline></video>
+        <button class="btn-limpar" id="btn-x" onclick="clearMidia()">✕</button>
+      </div>
+      <div class="campo" style="margin-top:12px;border-top:1px dashed var(--border);padding-top:12px">
+        <label>🔗 ou link do YouTube/Vimeo</label>
+        <input type="text" id="a-url" placeholder="https://youtube.com/watch?v=..." style="width:100%;padding:8px;border:1px solid var(--border);border-radius:4px">
+      </div>
+      <div class="campo"><label>🎵 Música (Vocal)</label><input type="text" id="a-mus-vocal"></div>
+      <div class="campo"><label>🎹 Música (Instrumental)</label><input type="text" id="a-mus-inst"></div>
+      <div class="campo"><label>número da semana</label><input type="number" id="a-sem" min="1" style="width:100px"></div>
+      <button class="btn-publicar" id="btn-pub" onclick="pub()">publicar esta semana</button>
+      <p class="status" id="a-status"></p>
+      <div class="admin-list">
+        <div class="list-title">textos publicados</div>
+        <div id="lista-textos"></div>
+      </div>
+    </div>
+    <div id="tab-msg" class="tab-content"><div class="list-title">mensagens recebidas</div><div id="a-msgs"></div></div>
+    <div id="tab-email" class="tab-content"><div class="list-title">emails captados</div><div id="a-emails"></div></div>
+    <button class="btn-sair" onclick="closeAdmin()">← sair</button>
+  </div>
+</div>
+
+<div id="view-login">
+  <div class="login-wrap">
+    <h2 class="login-titulo">respiro</h2>
+    <input type="password" class="login-input" id="login-pass" placeholder="senha">
+    <button class="login-btn" onclick="login()">entrar</button>
+    <p class="login-err" id="login-err">senha incorreta</p>
+  </div>
+</div>
+
+<div class="som-wrap">
+  <button class="btn-som" id="btn-som" onclick="toggleSom()">🎧</button>
+  <div id="som-menu">
+    <button class="som-opt" onclick="setSom('floresta')">🌿 floresta</button>
+    <button class="som-opt" onclick="setSom('chuva')">🌧 chuva</button>
+    <button class="som-opt" onclick="setSom('mar')">🌊 mar</button>
+    <button class="som-opt" onclick="setSom('vento')">🍃 vento</button>
+    <button class="som-opt" onclick="setSom('branco')">〰 ruído branco</button>
+    <button class="som-opt" onclick="setSom('rosa')">∿ ruído rosa</button>
+    <button class="som-opt" onclick="stopSomUI()">○ desligar</button>
+  </div>
+</div>
+
+<div id="leitura-music">
+  <button class="btn-close-music" onclick="closeMusic()">✕</button>
+  <div class="music-tabs">
+    <button class="music-tab" id="tab-vocal" onclick="playMus('vocal')">🎵 Vocal</button>
+    <button class="music-tab" id="tab-inst" onclick="playMus('inst')">🎹 Instrumental</button>
+  </div>
+  <div id="music-player"></div>
+</div>
+
+<script>
+let adminOk=false,token=null,textos=[],idx=0,somAtivo=null,somObj={},ctx=null;
+function auth(){return token?{Authorization:'Bearer '+token}:{}}
+async function api(path,opts={}){const r=await fetch(path,{...opts,headers:{'Content-Type':'application/json',...auth(),...opts.headers},body:opts.body?JSON.stringify(opts.body):undefined});if(!r.ok)throw new Error(r.status);return r.json()}
+async function login(){const p=document.getElementById('login-pass').value.trim(),e=document.getElementById('login-err');if(!p){e.style.display='block';return}try{await fetch('/api/publicar',{method:'OPTIONS',headers:{Authorization:'Bearer '+p}});token=p;adminOk=true;document.getElementById('view-login').classList.remove('open');document.getElementById('view-admin').classList.add('open');e.style.display='none';document.getElementById('login-pass').value='';loadAdmin();loadTextosAdmin()}catch(x){e.style.display='block';token=null;adminOk=false}}
+async function loadHero(){try{const{msgs}=await api('/api/textos');textos=msgs||[];if(!textos.length)return;const t=textos[0];document.getElementById('hero-titulo').textContent=t.titulo;document.getElementById('hero-texto').textContent=t.texto.slice(0,150)+'...';if(t.midia&&t.tipo==='image')document.getElementById('hero-bg').style.backgroundImage='url('+t.midia+')';document.getElementById('hero-btn').onclick=()=>{idx=0;openRead()}}catch(e){console.error(e)}}
+function openRead(){document.getElementById('hero').style.display='none';document.getElementById('view-leitura').style.display='block';renderRead()}
+function closeRead(){document.getElementById('view-leitura').style.display='none';document.getElementById('hero').style.display='flex';loadHero()}
+function renderRead(){const t=textos[idx];if(!t)return;document.getElementById('leitura-semana').textContent='semana '+t.semana+' • '+t.ano;document.getElementById('leitura-titulo').textContent=t.titulo;document.getElementById('leitura-texto').textContent=t.texto;const bg=document.getElementById('leitura-bg'),vid=document.querySelector('.leitura-video-bg');if(vid)vid.remove();if(t.midia){if(t.tipo==='image'){bg.style.backgroundImage='url("'+t.midia+'")';bg.style.display='block'}else{bg.style.display='none';const v=document.createElement('video');v.src=t.midia;v.className='leitura-video-bg';v.autoplay=v.muted=v.loop=v.playsInline=true;document.getElementById('view-leitura').appendChild(v)}}else{bg.style.display='none';bg.style.backgroundImage='none'}document.getElementById('nav-prev').classList.toggle('disabled',idx===0);document.getElementById('nav-next').classList.toggle('disabled',idx===textos.length-1);document.getElementById('progresso-bar').style.width=((idx+1)/textos.length*100)+'%';showMusic()}
+function nav(d){const n=idx+d;if(n<0||n>=textos.length)return;idx=n;renderRead();window.scrollTo(0,0)}
+function font(d){const r=document.documentElement,a=parseInt(getComputedStyle(r).getPropertyValue('--font')),b=Math.min(24,Math.max(14,a+d*2));r.style.setProperty('--font',b+'px Georgia,serif')}
+async function pub(){const tit=document.getElementById('a-titulo').value.trim(),txt=document.getElementById('a-texto').value.trim(),sem=document.getElementById('a-sem').value.trim(),fi=document.getElementById('a-midia'),st=document.getElementById('a-status'),btn=document.getElementById('btn-pub');if(!tit||!txt||!sem){st.textContent='preencha título, texto e semana.';st.className='status err';return}const url=document.getElementById('a-url').value.trim();async function save(m,t){btn.disabled=true;btn.textContent='publicando...';try{await api('/api/publicar',{method:'POST',body:{semana:sem.padStart(2,'0'),ano:new Date().getFullYear().toString(),titulo:tit,texto:txt,midia:m||'',tipo:t||'image',musica_vocal:document.getElementById('a-mus-vocal').value.trim(),musica_instrumental:document.getElementById('a-mus-inst').value.trim()}});['a-titulo','a-texto','a-sem','a-url','a-mus-vocal','a-mus-inst'].forEach(id=>document.getElementById(id).value='');document.getElementById('a-name').textContent='escolher arquivo...';document.getElementById('prev-img').style.display='none';document.getElementById('prev-vid').style.display='none';document.getElementById('btn-x').style.display='none';fi.value='';st.textContent='✓ publicado.';st.className='status ok';await loadHero();loadAdmin();loadTextosAdmin()}catch(e){console.error(e);st.textContent='erro ao publicar.';st.className='status err'}btn.disabled=false;btn.textContent='publicar esta semana'}if(url){let tp='image';if(url.includes('youtube')||url.includes('youtu.be')||url.includes('vimeo'))tp='video';await save(url,tp)}else if(fi.files[0]){const f=fi.files[0];if(f.size>5*1024*1024){st.textContent='arquivo muito grande (máx 5MB).';st.className='status err';return}const tp=f.type.startsWith('video')?'video':'image',r=new FileReader();r.onload=e=>save(e.target.result,tp);r.readAsDataURL(f)}else await save('','image')}
+function prev(inp){const f=inp.files[0];if(!f)return;const u=URL.createObjectURL(f),v=f.type.startsWith('video');document.getElementById('prev-img').style.display=v?'none':'block';document.getElementById('prev-vid').style.display=v?'block':'none';if(v){document.getElementById('prev-vid').src=u;document.getElementById('prev-vid').play()}else document.getElementById('prev-img').src=u;document.getElementById('a-name').textContent=f.name;document.getElementById('btn-x').style.display='block'}
+function clearMidia(){document.getElementById('a-midia').value='';document.getElementById('prev-img').style.display='none';document.getElementById('prev-vid').style.display='none';document.getElementById('a-name').textContent='escolher arquivo...';document.getElementById('btn-x').style.display='none'}
+async function loadAdmin(){try{const{msgs,emails}=await api('/api/admin'),c=document.getElementById('a-msgs');c.innerHTML=msgs.length?msgs.map(m=>'<div class="msg-card"><p class="msg-txt">"'+esc(m.texto)+'"</p>'+(m.email?'<p class="msg-email">'+esc(m.email)+'</p>':'')+'<p class="msg-data">'+new Date(m.created_at).toLocaleDateString('pt-BR')+'</p><button class="btn-x" onclick="delItem(\'mensagem\','+m.id+')">×</button></div>').join(''):'<p class="sem">nenhuma mensagem.</p>';const ce=document.getElementById('a-emails');ce.innerHTML=emails.length?emails.map(e=>'<div style="display:flex;justify-content:space-between;padding:6px;border-bottom:1px solid var(--border)"><span>'+esc(e.email)+'</span><span style="font-size:0.7rem;color:var(--soft)">'+new Date(e.created_at).toLocaleDateString('pt-BR')+'</span></div>').join(''):'<p class="sem">nenhum email.</p>'}catch(e){console.error(e)}}
+async function delItem(tp,id){try{await api('/api/admin',{method:'DELETE',body:{tp,id}});loadAdmin()}catch(e){}}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function closeAdmin(){document.getElementById('view-admin').classList.remove('open');window.location.hash=''}
+function tab(t,b){document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(e=>e.classList.remove('active'));document.getElementById('tab-'+t).classList.add('active');b.classList.add('active');if(t==='pub')loadTextosAdmin()}
+async function loadTextosAdmin(){const c=document.getElementById('lista-textos');if(!c)return;try{const d=await api('/api/painel');if(d.msgs){c.innerHTML='';d.msgs.reverse().forEach(t=>{const div=document.createElement('div');div.className='admin-item';div.innerHTML='<span><strong>Sem '+t.semana+':</strong> '+t.titulo+'</span><button class="btn-del" onclick="delTexto('+t.id+',\''+t.titulo.replace(/'/g,"\\'")+'\')">Excluir</button>';c.appendChild(div)})}}catch(e){console.error(e)}}
+async function delTexto(id,tit){if(!confirm('Excluir "'+tit+'"?'))return;try{await api('/api/publicar',{method:'DELETE',body:{id}});alert('Excluído!');loadTextosAdmin()}catch(e){alert('Erro.')}}
+function route(){if(location.hash==='#admin'){if(adminOk){document.getElementById('view-admin').classList.add('open');loadAdmin();loadTextosAdmin()}else document.getElementById('view-login').classList.add('open')}}
+function getCtx(){if(!ctx)ctx=new(window.AudioContext||window.webkitAudioContext)();return ctx}
+function buf(ctx,tp){const l=3*ctx.sampleRate,b=ctx.createBuffer(1,l,ctx.sampleRate),d=b.getChannelData(0);if(tp==='branco'){for(let i=0;i<l;i++)d[i]=Math.random()*2-1}else{let a=0,b1=0,c=0,e=0,f=0,g=0,h=0;for(let i=0;i<l;i++){const w=Math.random()*2-1;a=0.99886*a+w*0.0555179;b1=0.99332*b1+w*0.0750759;c=0.969*c+w*0.153852;e=0.8665*e+w*0.3104856;f=0.55*f+w*0.5329522;g=-0.7616*g-w*0.016898;d[i]=(a+b1+c+e+f+g+h+w*0.5362)*0.11;h=w*0.115926}}return b}
+function loop(ctx,b,d){const s=ctx.createBufferSource();s.buffer=b;s.loop=true;s.connect(d);s.start();return s}
+const sons={floresta:(ctx,m)=>{const n=ctx.currentTime,bv=buf(ctx,'rosa'),fv=ctx.createBiquadFilter(),gv=ctx.createGain();fv.type='bandpass';fv.frequency.value=200;fv.Q.value=0.4;gv.gain.setValueAtTime(0,n);gv.gain.linearRampToValueAtTime(0.35,n+4);const sv=loop(ctx,bv,fv);fv.connect(gv);gv.connect(m);return{srcs:[sv],oscs:[]}},chuva:(ctx,m)=>{const n=ctx.currentTime,br=buf(ctx,'branco'),fr=ctx.createBiquadFilter(),gr=ctx.createGain();fr.type='bandpass';fr.frequency.value=1400;fr.Q.value=0.6;gr.gain.setValueAtTime(0,n);gr.gain.linearRampToValueAtTime(0.42,n+3);const sr=loop(ctx,br,fr);fr.connect(gr);gr.connect(m);return{srcs:[sr],oscs:[]}},mar:(ctx,m)=>{const n=ctx.currentTime,bw=buf(ctx,'rosa'),fw=ctx.createBiquadFilter(),gw=ctx.createGain();fw.type='lowpass';fw.frequency.value=700;fw.Q.value=0.8;gw.gain.setValueAtTime(0,n);gw.gain.linearRampToValueAtTime(0.45,n+4);const sw=loop(ctx,bw,fw);fw.connect(gw);gw.connect(m);return{srcs:[sw],oscs:[]}},vento:(ctx,m)=>{const n=ctx.currentTime,bv=buf(ctx,'rosa'),fv=ctx.createBiquadFilter(),gv=ctx.createGain();fv.type='bandpass';fv.frequency.value=350;fv.Q.value=0.35;gv.gain.setValueAtTime(0,n);gv.gain.linearRampToValueAtTime(0.48,n+5);const sv=loop(ctx,bv,fv);fv.connect(gv);gv.connect(m);return{srcs:[sv],oscs:[]}},branco:(ctx,m)=>{const n=ctx.currentTime,b=buf(ctx,'branco'),g=ctx.createGain();g.gain.setValueAtTime(0,n);g.gain.linearRampToValueAtTime(0.25,n+2);const s=loop(ctx,b,g);g.connect(m);return{srcs:[s],oscs:[]}},rosa:(ctx,m)=>{const n=ctx.currentTime,b=buf(ctx,'rosa'),g=ctx.createGain();g.gain.setValueAtTime(0,n);g.gain.linearRampToValueAtTime(0.35,n+2);const s=loop(ctx,b,g);g.connect(m);return{srcs:[s],oscs:[]}}}
+function stopSom(cb){if(!somObj.master){if(cb)cb();return}somObj.master.gain.linearRampToValueAtTime(0,ctx.currentTime+1.5);setTimeout(()=>{try{somObj.srcs?.forEach(s=>s.stop());somObj.oscs?.forEach(o=>o.stop())}catch(e){}somObj={};if(cb)cb()},1800)}
+function setSom(n){document.getElementById('som-menu').classList.remove('open');if(somAtivo===n){stopSom();return}stopSom(()=>{const c=getCtx(),m=c.createGain();m.gain.value=0.35;m.connect(c.destination);const nos=sons[n](c,m);somObj={master:m,srcs:nos.srcs,oscs:nos.oscs};somAtivo=n;updSom()})}
+function stopSomUI(){document.getElementById('som-menu').classList.remove('open');stopSom(()=>{somAtivo=null;updSom()})}
+function toggleSom(){document.getElementById('som-menu').classList.toggle('open')}
+function updSom(){document.querySelectorAll('.som-opt').forEach(e=>e.classList.remove('ativo'));if(somAtivo){document.getElementById('btn-som').classList.add('on');const el=document.getElementById('som-menu').querySelector('[onclick*="'+somAtivo+'"]');if(el)el.classList.add('ativo')}else document.getElementById('btn-som').classList.remove('on')}
+document.addEventListener('click',e=>{const m=document.getElementById('som-menu'),b=document.getElementById('btn-som');if(m.classList.contains('open')&&!m.contains(e.target)&&!b.contains(e.target))m.classList.remove('open')})
+function showMusic(){const t=textos[idx];if(!t||(!t.musica_vocal&&!t.musica_instrumental)){document.getElementById('leitura-music').style.display='none';return}document.getElementById('leitura-music').style.display='block';if(t.musica_vocal)loadMus(t.musica_vocal,'vocal');else if(t.musica_instrumental)loadMus(t.musica_instrumental,'inst')}
+function loadMus(u,tp){const p=document.getElementById('music-player'),bv=document.getElementById('tab-vocal'),bi=document.getElementById('tab-inst');if(!p)return;if(bv)bv.classList.toggle('active',tp==='vocal');if(bi)bi.classList.toggle('active',tp==='inst');let eu=u;if(u.includes('youtube')||u.includes('youtu.be')){const vid=u.split('v=')[1]?.split('&')[0]||u.split('/').pop();eu='https://www.youtube.com/embed/'+vid+'?autoplay=1'}else if(u.includes('spotify'))eu=u.replace('open.spotify.com','open.spotify.com/embed');p.innerHTML='<iframe src="'+eu+'" frameborder="0" allowtransparency="true" allow="encrypted-media" style="height:140px;"></iframe>'}
+function playMus(tp){const t=textos[idx];if(!t)return;if(tp==='vocal'&&t.musica_vocal)loadMus(t.musica_vocal,'vocal');else if(tp==='inst'&&t.musica_instrumental)loadMus(t.musica_instrumental,'inst')}
+function closeMusic(){document.getElementById('leitura-music').style.display='none';document.getElementById('music-player').innerHTML=''}
+async function share(){const t=textos[idx];if(!t)return;const u=location.href.split('#')[0]+'#semana-'+t.semana.padStart(2,'0');if(navigator.share){try{await navigator.share({title:t.titulo,text:'Leia: '+t.titulo,url:u})}catch(e){}}else{navigator.clipboard.writeText(t.titulo+'\n'+u).then(()=>alert('Link copiado!'))}}
+addEventListener('DOMContentLoaded',()=>{loadHero();route();addEventListener('hashchange',route);document.getElementById('login-pass').addEventListener('keydown',e=>{if(e.key==='Enter')login()})});
+</script>
+</body>
+</html>
